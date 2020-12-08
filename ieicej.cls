@@ -2037,52 +2037,55 @@
      \hbox{}%
     }\hskip8mm\hbox{}\par
     \vskip\baselineskip
-    \bgroup
-     \centering
-     {\fontsize{16}{23}\selectfont
-      \@jtitle\par
-     }%
-     \vskip.25\baselineskip
-     \ifx\@jsubtitle\empty
-     \else
-      {\huge
-       \@jsubtitle\par
-      }%
-      \vskip.25\baselineskip
-     \fi
-     {\LARGE
-       \@outputJauthorlist\par
-     }%
-     \vskip.5\baselineskip
-     {\fontsize{10.5}{15}\selectfont
-      \J@affiliate\par
-      \Jp@affiliate\par
-      \ifx\@MailAddress\empty
+  % Remove Japanese title for pure English paper
+  % But leave Email parsing
+  % Modded by CHEN 2020/12/08
+  %   \bgroup
+  %    \centering
+  %    {\fontsize{16}{23}\selectfont
+  %     \@jtitle\par
+  %    }%
+  %    \vskip.25\baselineskip
+  %    \ifx\@jsubtitle\empty
+  %    \else
+  %     {\huge
+  %      \@jsubtitle\par
+  %     }%
+  %     \vskip.25\baselineskip
+  %    \fi
+  %    {\LARGE
+  %      \@outputJauthorlist\par
+  %    }%
+  %    \vskip.5\baselineskip
+  %    {\fontsize{10.5}{15}\selectfont
+  %     \J@affiliate\par
+  %     \Jp@affiliate\par
+  %     \ifx\@MailAddress\empty
        \fmt@Ema
-       \ifx\header@ma\empty
-        \vskip.5\baselineskip
-       \else
-	E-mail: \Mail@ddress\par
-	\vskip.5\baselineskip
-       \fi
-      \else
-       E-mail: \@MailAddress
-       \vskip.5\baselineskip
-      \fi
-     }%
-    \egroup
-    \bgroup\large
-     \leavevmode
-     \unhbox\jabstractbox\par
-     \nointerlineskip
-     \vskip\baselineskip
-     \vskip-1zh
-     \vskip0pt
-     \leavevmode
-     \unhbox\jkeywordbox\par
-    \egroup
+  %      \ifx\header@ma\empty
+  %       \vskip.5\baselineskip
+  %      \else
+	% E-mail: \Mail@ddress\par
+	% \vskip.5\baselineskip
+  %      \fi
+  %     \else
+  %      E-mail: \@MailAddress
+  %      \vskip.5\baselineskip
+  %     \fi
+  %    }%
+  %   \egroup
+    % \bgroup\large
+    %  \leavevmode
+    %  \unhbox\jabstractbox\par
+    %  \nointerlineskip
+    %  \vskip\baselineskip
+    %  \vskip-1zh
+    %  \vskip0pt
+    %  \leavevmode
+    %  \unhbox\jkeywordbox\par
+    % \egroup
  %%
-    \vskip1.5\baselineskip
+    % \vskip1.5\baselineskip
     \bgroup
      \centering
      {\fontsize{16}{23}\selectfont
