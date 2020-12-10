@@ -135,7 +135,7 @@ OCR, fuzzy search, regular expression, partial word matching
         
     \subsection{OCR Text Processing with Regular Expression}
     \label{sec:algorithm.ocrregex}
-        In the process of extracting model info from OCR processed text from product label, we firstly use a regular expression to recognize the guidance keywords like {\em Model}, {\em Catalog}, etc. But when tested in practice, we found the recognition rate unfavorable.
+        In the process of extracting model info from OCR processed text from product label, we firstly use a regular expression to recognize the guidance keywords like {\em Model}, {\em Catalog}, etc. But when tested in practice, we found the recognition rate unfavorable. The result is shown in table \ref{table:regex}.
         
         The regular expression we use (letter case ignored):
 
@@ -147,17 +147,46 @@ OCR, fuzzy search, regular expression, partial word matching
         \end{BVerbatim}
         \end{center}
 
-        [Recognition result table or chart] 
-        \vspace*{\baselineskip}
+        \begin{table}[tb]
+            \caption{OCR text processing with regular expression test results}
+            \label{table:regex}
+            \begin{center}
+                \begin{tabular}{c|>{\centering\arraybackslash}p{2cm}}
+                \Hline
+                Item & Count \\ 
+                \Hline
+                Photos Tested & 177 \\
+                Correct Recognition & 51 \\
+                Incorrect Recognition & 126 \\
+                \hline
+                Recognition Rate (\%) & 28.81 \\
+                \Hline
+                \end{tabular}
+            \end{center}
+        \end{table}
 
         Because of the technical limitations in OCR, the recognized text cannot be 100\% accurate. As the brightness, contrast, or other environmental condition when the pictures of product labels are taken changes, the accuracy of recognition can fluctuate significantly. The material or color of the product label can also perform great influence on the recognition results.
         
-        \vspace*{\baselineskip}
-        [Pic of plastic label]
-        \vspace*{\baselineskip}
+        \begin{figure}[t] 
+            \begin{center}
+            \includegraphics[width=0.48\textwidth]{figure/plastic.png}
+            \end{center}
+            \caption{A label with protruding texts directly engraved on the plastic case}
+            \label{fig:plastic}
+        \end{figure}
 
-        In this label, the protruding texts are directly engraved on the plastic case. The foreground is the same color as the background, so it is difficult to recognize all the text correctly.
+        In the label in figure \ref{fig:plastic}, the protruding texts are directly engraved on the plastic case. The foreground is the same color as the background, so it is difficult to recognize all the text correctly.
         
+        Also, for some similar characters it is very hard for OCR to tell apart, like letter “O” and number “0”, letter “l” and number “1”. In the picture in figure \ref{fig:letter-number}, the number 0 in model, which is in the top left corner was incorrectly recognized as letter O. 
+        
+        \begin{figure}[t] 
+            \begin{center}
+            \includegraphics[width=0.48\textwidth]{figure/letter-number.png}
+            \end{center}
+            \caption{A label with misrecognized number 0}
+            \label{fig:letter-number}
+        \end{figure}
+
         Model text are mostly irregular alphanumeric strings rather than meaningful English words. Thus, it is also hard to use OCR error correction basing on word classification.
         
         \vspace*{\baselineskip}
@@ -167,12 +196,25 @@ OCR, fuzzy search, regular expression, partial word matching
 
         \vspace*{\baselineskip}
         
-        Furthermore, the guidance keywords we used for regular expression recognition do not exist on some of the labels we tested. On these labels, alphanumeric product models are just printed in different fonts or sizes. Recognition could be difficult because such appearance information is lost after OCR.
+        Also, like in figure \ref{fig:3models}, there are some labels containing multiple guidance keywords. For example having both {\em Model Name} and {\em Model No.} in English, together with {\em 型番} in Japanese which also means model.
+
+        \begin{figure}[t] 
+            \begin{center}
+            \includegraphics[width=0.48\textwidth]{figure/3models.png}
+            \end{center}
+            \caption{A label containing multiple guidance keywords}
+            \label{fig:3models}
+        \end{figure}
+
+        Furthermore, the guidance keywords we used for regular expression recognition do not exist on some of the labels we tested. On these labels, such as in figure \ref{fig:no-guidance.png}, alphanumeric product models are just printed in different fonts or sizes, sometimes even the same appearance as other texts in the same label. Recognition could be difficult because such appearance information is lost after OCR.
         
-        \vspace*{\baselineskip}
-        [Pic of label with no guidance text]
-        \vspace*{\baselineskip}
-        
+        \begin{figure}[t] 
+            \begin{center}
+            \includegraphics[width=0.48\textwidth]{figure/no-guidance.png}
+            \end{center}
+            \caption{A label with no guidance keywords}
+            \label{fig:no-guidance.png}
+        \end{figure}
 
         Thus, processing OCR text results with regular expression specialized in recognizing guidance keywords is not very reliable. We need some other additional solutions together to improve the accuracy.
         
@@ -180,7 +222,7 @@ OCR, fuzzy search, regular expression, partial word matching
     \subsection{Word Matching from Master Database}
         In view of the limited accuracy of OCR-based regular expression recognition, in order to improve the accuracy, we use a pre-prepared master database containing a large number of product models to perform text matching queries.
         
-        In order to identify product labels that do not have guidance keywords and directly print alphanumeric strings on its surfaces, we first use regular expressions to extract all alphanumeric strings which have possibility to be Model text in the OCR recognition result.
+        In order to identify product labels that do not have guidance keywords and directly print alphanumeric strings on its surfaces, we first use regular expressions to extract all alphanumeric strings which have possibility to be Model text in the OCR recognition result. The test result is shown in table \ref{table:word-matching}.
     
         The regular expression we use:
 
@@ -193,9 +235,23 @@ OCR, fuzzy search, regular expression, partial word matching
         \end{BVerbatim}
         \end{center}
 
-        [Example tables and pictures of the identified results]
-
-        \vspace*{\baselineskip}
+        \begin{table}[tb]
+            \caption{Word matching from master database test results}
+            \label{table:word-matching}
+            \begin{center}
+                \begin{tabular}{c|>{\centering\arraybackslash}p{2cm}}
+                \Hline
+                Item & Count \\ 
+                \Hline
+                Photos Tested & 177 \\
+                Correct Recognition & 150 \\
+                Incorrect Recognition & 27 \\
+                \hline
+                Recognition Rate (\%) & 84.75 \\
+                \Hline
+                \end{tabular}
+            \end{center}
+        \end{table}
 
         On this basis, we query the possible model texts from all the product models in the master database using full word matching, and extract the correct product model result, as candidate results to output.
     
