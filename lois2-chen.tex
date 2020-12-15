@@ -176,16 +176,6 @@ OCR, fuzzy search, regular expression, partial word matching
         \end{figure}
 
         In the label in figure \ref{fig:plastic}, the protruding texts are directly engraved on the plastic case. The foreground is the same color as the background, so it is difficult to recognize all the text correctly.
-        
-        Also, for some similar characters it is very hard for OCR to tell apart, like letter “O” and number “0”, letter “l” and number “1”. In the picture in figure \ref{fig:letter-number}, the number 0 in model, which is in the top left corner was incorrectly recognized as letter O. 
-        
-        \begin{figure}[t] 
-            \begin{center}
-            \includegraphics[width=0.48\textwidth]{figure/letter-number.png}
-            \end{center}
-            \caption{A label with misrecognized number 0}
-            \label{fig:letter-number}
-        \end{figure}
 
         Model text are mostly irregular alphanumeric strings rather than meaningful English words. Thus, it is also hard to use OCR error correction basing on word classification.
         
@@ -261,11 +251,15 @@ OCR, fuzzy search, regular expression, partial word matching
     
         Using this method, as long as the master database with a large enough coverage is prepared in advance, the probability of the model being correctly identified can be greatly improved.
         
-        However, this method is still limited, and it cannot solve the recognition errors that inevitably occur in the OCR process. As mentioned earlier in chapter \ref{sec:algorithm.ocrregex}, OCR error correction for irregular alphanumeric model texts has very limited effect. For the model text with recognition error, even if our regular expression can successfully recognize it as a candidate string, the whole word matching query from the master DB will still fail.
-    
-        \vspace*{\baselineskip}
-        [Figure: A text with one incorrect letter recognition and its photo]
-        \vspace*{\baselineskip}
+        However, this method is still limited, and it cannot solve the recognition errors that inevitably occur in the OCR process. For some similar characters it is very hard for OCR to tell apart, like letter “O” and number “0”, letter “l” and number “1”. In the picture in figure \ref{fig:letter-number}, the number 0 in model, which is in the top left corner was incorrectly recognized as letter O. As mentioned earlier in chapter \ref{sec:algorithm.ocrregex}, OCR error correction for irregular alphanumeric model texts has very limited effect. For the model text with recognition error, even if our regular expression can successfully recognize it as a candidate string, the whole word matching query from the master DB will still fail.
+        
+        \begin{figure}[t] 
+            \begin{center}
+            \includegraphics[width=0.48\textwidth]{figure/letter-number.png}
+            \end{center}
+            \caption{A label with misrecognized number 0}
+            \label{fig:letter-number}
+        \end{figure}
     
     \subsection {Non-Limit Fuzzy Search}
         In order to tolerate OCR recognition errors to a certain extent, we give up whole word matching and instead use Fuzzy Search for master database search. Specifically in this proposal, we use {\em FuzzyWuzzy} to calculate the similarity between two strings.
