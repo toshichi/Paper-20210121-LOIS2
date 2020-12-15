@@ -78,28 +78,48 @@ Otemachi 2-6-2, Chiyoda, Tokyo, 100-0004, Japan}
 % \begin{jkeyword}
 % %和文キーワード
 % \end{jkeyword}
+
 \begin{eabstract}
-In the practice of recognition for the info from product labels of electronic devices, specifying the model of the product is considered critical. Optical Character Recognition (OCR) is firstly used to convert the picture into text. Then, we do fuzzy search for all the alphanumeric strings detected in the master database which stores all the product information, to match the most possible model string and prevent possible mistakes in OCR process. 
-However, doing fuzzy search in the master database with a huge amount of product info (with assumption of more than 550,000 pieces) takes an unacceptable long time.
-In this study, we propose a speed-up method for the fuzzy search by limiting the searching range by possible candidates and combining the full matching search, the partial matching search, and the fuzzy search. 
-With this method, we can take a balance between searching speed and mistake prevention for OCR text, and successfully limit the search range into several thousand (about 0.3\% of all data amount). In most cases the search result would come out in only less than 1 second which is acceptable for users to wait. This method turns out to be possible to put into practice when deploying into web services.  
+    %background
+    Recently, the {\em optical character recognition (OCR)} technology has been remarkably progressed to result in the high recognition rate due to the advancements of {\em deep learning techniques}. Besides, smartphones equipped with cameras have broadly spread among people around the world. As a result, the information acquisition from an object ravel using a smartphone camera can be a good choice as the easy and quick way.
+    %problem to be solved
+    However, the character recognition rate is still not $100\%$. Some characters are incorrectly recognized or missing in the recognition result. Then, if the correct characters to them have been stored as one record in a database, the {\em fuzzy search} can be applied to find the best matching record with the recognition result. Unfortunately, it will take unacceptably long time if the database has a lot of records, because it spends much longer time to process one record. 
+    %contribution
+    In this study, we propose a speed-up method for the fuzzy search by limiting the processing records into possible ones where the part of the characters in the record is matching. 
+    %evaluation
+    For evaluations, we collect 300 photos of object ravels and their character recognition results, and apply our proposal to them. The results show that the proposal reduces the CPU time from $???sec$ to $???sec$ by limiting the number of search records into 0.3\% of all the records. However, the record hit rate is also reduced from $???\%$ to $???\%$ whose improvement will be in future studies.
+    
 \end{eabstract}
 \begin{ekeyword}
 OCR, fuzzy search, regular expression, partial word matching
 \end{ekeyword}
 \maketitle
 
+%+++++++++++++++++++++++++++++++++++++++++++++++
 \section{Introduction}
-    In this section, we introduce some basic methods we used in out study.
-    \subsection{OCR}
-        With OCR we can convert a label picture into text.
-    \subsection{Regular Expression}
-        With RegEx we can pick all the alphanumeric strings from OCR result text.
-    \subsection{Fuzzy Search}
-        With Fuzzy Search we can find the most match model out of a given alphanumeric string.
+    %background
+    Recently, the {\em optical character recognition (OCR)} technology has been remarkably progressed to result in the high recognition rate due to the advancements of {\em deep learning techniques}. Besides, smartphones equipped with cameras have broadly spread among people around the world. As a result, the information acquisition from an object ravel using a smartphone camera can be a good choice as the easy and quick way.
 
-        But it's slow. Thus we made this study and come up with a new method.
+    %problem to be solved
+    However, the character recognition rate is still not $100\%$. Some characters are incorrectly recognized or missing in the recognition result. Then, if the correct characters to them have been stored as one record in a database, the {\em fuzzy search} can be applied to find the best matching record with the recognition result. Unfortunately, it will take unacceptably long time if the database has a lot of records, because it spends much longer time to process one record. 
 
+    %contribution
+    In this study, we propose a speed-up method for the fuzzy search by limiting the processing records into possible ones where the part of the characters in the record is matching. 
+    もっと詳しく書いてください．
+
+    %evaluation
+    For evaluations, we collect 300 photos of object ravels and their character recognition results, and apply our proposal to them. The results show that the proposal reduces the CPU time from $???sec$ to $???sec$ by limiting the number of search records into 0.3\% of all the records. However, the record hit rate is also reduced from $???\%$ to $???\%$ whose improvement will be in future studies.
+    もっと詳しく書いてください．
+
+    %contents
+    The rest of this paper is organized as follows:
+    Section \ref{sec:preliminary} shows preliminary technologies to this study.
+    Section \ref{sec:proposal} presents the speed-up method.
+    Section \ref{sec:evaluation} shows the evaluation results.
+    Finally, Section \ref{sec:conclusion} concludes this paper with future works.
+
+
+%+++++++++++++++++++++++++++++++++++++++++++++++
 \section{Preliminary}
 \label{sec:efp}
     In this section, we introduce preliminary technologies of our study in this paper.
@@ -120,6 +140,7 @@ OCR, fuzzy search, regular expression, partial word matching
         
         (https://github.com/seatgeek/fuzzywuzzy)
 
+%+++++++++++++++++++++++++++++++++++++++++++++++
 \section{Proposal of Speed-up Method}
 \label{sec:algorithm}
     In this section, we propose the speed-up method for the Fuzzy search process in the product label recognition system.
@@ -185,6 +206,7 @@ OCR, fuzzy search, regular expression, partial word matching
                 \end{center}
             \end{table}
         
+%+++++++++++++++++++++++++++++++++++++++++++++++
 \section{Evaluation}
 \label{sec:evaluation}
     In this section, we evaluate the proposal. 
@@ -266,6 +288,7 @@ OCR, fuzzy search, regular expression, partial word matching
     \end{table*}
     
             
+%+++++++++++++++++++++++++++++++++++++++++++++++
 \section{Conclusion}
 \label{sec:conclusion}
     It can be seen that using Fuzzy Search Limited by Partial Word Matching can effectively reduce the time into the acceptable range while increasing the accuracy rate to be close to that of Non-Limit Fuzzy Search. With this method, we can take a balance between searching speed and mistake prevention for OCR text, and successfully limit the search range into several thousand (about 0.3\% of all data amount). In most cases the search result would come out in only less than 1 second which is acceptable for users to wait. This method turns out to be possible to put into practice when deploying into web services.
@@ -275,6 +298,7 @@ OCR, fuzzy search, regular expression, partial word matching
     We consider that, for each record in the master database, it not only contains the model text information of the product, but also its brand or manufacturer information. Before doing Fuzzy Search, we can also use other recognition methods to match and analyze the text contained in the OCR results to determine the brand of the product, and use brand information matching to further limit the search range of Fuzzy Search for model texts, which may further improve searching performance.
     
 
+%+++++++++++++++++++++++++++++++++++++++++++++++
 %\bibliographystyle{sieicej}
 %\bibliography{myrefs}
 \begin{thebibliography}{99}% 文献数が10未満の時 {9}
@@ -313,3 +337,4 @@ OCR, fuzzy search, regular expression, partial word matching
 \end{thebibliography}
 
 \end{document}
+
