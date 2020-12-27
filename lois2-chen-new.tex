@@ -2,7 +2,6 @@
 %% v3.3 [2020/06/02]
 
 \documentclass[technicalreport]{ieicej}
-%\usepackage[dvips]{graphicx}
 \usepackage[dvipdfmx]{graphicx,xcolor}
 \usepackage{float}
 \usepackage[fleqn]{amsmath}
@@ -83,11 +82,11 @@ Otemachi 2-6-2, Chiyoda, Tokyo, 100-0004, Japan}
     %background
     Recently, the {\em optical character recognition (OCR)} technology has been remarkably progressed to result in the high recognition rate due to the advancements of {\em deep learning techniques}. Besides, smartphones equipped with cameras have broadly spread among people around the world. As a result, the information acquisition from an object ravel using a smartphone camera can be a good choice as the easy and quick way.
     %problem to be solved
-    However, the character recognition rate is still not $100\%$. Some characters are incorrectly recognized or missing in the recognition result. Then, if the correct characters to them have been stored as one record in a database, the {\em fuzzy search} can be applied to find the best matching record with the recognition result. Unfortunately, it will take unacceptably long time if the database has a lot of records, because it spends much longer time to process one record. 
+    However, the character recognition rate is still not $100\%$. Some characters are incorrectly recognized or missing in the recognition result. Then, if the correct characters to them have been stored as one record in a database, the {\em fuzzy search} can be applied to find the best matching record with the recognition result. Unfortunately, it will take long time if the database has a lot of records, because it spends much longer time to process one record. 
     %contribution
     In this study, we propose a speed-up method for the fuzzy search by limiting the processed records into possible ones where the part of the characters in the record is matching. 
     %evaluation
-    For evaluations, we collect 300 photos of object ravels and their character recognition results, and apply our proposal to them. The results show that the proposal reduces the CPU time from $???sec$ to $???sec$ by limiting the number of search records into 0.3\% of all the records. However, the record hit rate is also reduced from $???\%$ to $???\%$ whose improvement will be in future studies.
+    For evaluations, we collect 396 photos of object ravels and their character recognition results, and apply our proposal to them. The results show that the proposal reduces the CPU time from $15.241sec$ to $0.984sec$ by limiting the number of search records into 0.24\% of all the records. However, the record hit rate is also reduced slightly from $91.16\%$ to $90.91\%$ whose improvement will be in future studies.
     
 \end{eabstract}
 \begin{ekeyword}
@@ -108,32 +107,61 @@ OCR, fuzzy search, regular expression, partial word matching
     We divide one alphanumeric string into two halves. For each half, we use partial matching to query in the database, to find out records containing either half of the divided string. By dividing into two halves, we can ensure the correct model is in the matched range even if there is one incorrectly recognized or missing character in the recognition result. Then we perform {\em fuzzy search} in this matched range only instead of the whole database. 
 
     %evaluation
-    For evaluations, we collect 300 photos of object ravels and their character recognition results, and apply our proposal to them. The results show that the proposal reduces the CPU time from $???sec$ to $???sec$ by limiting the number of search records into 0.3\% of all the records. However, the record hit rate is also reduced from $???\%$ to $???\%$ whose improvement will be in future studies.
+    For evaluations, we collect 396 photos of object ravels and their character recognition results, and apply our proposal to them. The results show that the proposal reduces the CPU time from $15.241sec$ to $0.984sec$ by limiting the number of search records into 0.24\% of all the records. However, the record hit rate is also reduced from $91.16\%$ to $90.91\%$ whose improvement will be in future studies.
     Still, there are few cases which took longer than average time and not as fast as expected. With the longest searching time of over 13 seconds, our test result indicates that we can still do more to further improve this method.
 
     %contents
     The rest of this paper is organized as follows:
+
     Section \ref{sec:preliminary} shows preliminary technologies to this study.
+
     Section \ref{sec:proposal} presents the speed-up method.
+
     Section \ref{sec:evaluation} shows the evaluation results.
+
     Finally, Section \ref{sec:conclusion} concludes this paper with future works.
 
 
 %+++++++++++++++++++++++++++++++++++++++++++++++
 \section{Preliminary}
-\label{sec:efp}
+\label{sec:preliminary}
     In this section, we introduce preliminary technologies of our study in this paper.
 
     \subsection{Levenshtein Distance}
-        The Levenshtein distance is a string metric for measuring the difference between two sequences. Informally, the Levenshtein distance between two words is the minimum number of single-character edits (insertions, deletions or substitutions) required to change one word into the other. \cite{levenshtein}
+        Levenshtein is an algorithm to calculate {\em mininum edit distace (MED)} \cite{fuzzywuzzy-guidence}. The Levenshtein distance is a string metric for measuring the difference between two sequences. Informally, the Levenshtein distance between two words is the minimum number of single-character edits (insertions, deletions or substitutions) required to change one word into the other. \cite{levenshtein}
+
+        The Levenshtein distance between two strings a and b is calculated by:
+
+        \[
+            \operatorname{lev}(a, b)=\left\{\begin{array}{ll}
+            |a| & \text { if }|b|=0 \\
+            |b| & \text { if }|a|=0 \\
+            \operatorname{lev}(\operatorname{tail}(a), \operatorname{tail}(b)) & \text { if } a[0]=b[0] \\
+            1+\min \left\{\begin{array}{l}
+            \operatorname{lev}(\operatorname{tail}(a), b) \\
+            \operatorname{lev}(a, \operatorname{tail}(b)) \\
+            \operatorname{lev}(\operatorname{tail}(a), \operatorname{tail}(b))
+            \end{array}\right. & \text { otherwise. }
+            \end{array}\right.
+        \]
 
     \subsection{FuzzyWuzzy}
         FuzzyWuzzy is a Python library useing Levenshtein Distance to calculate the differences between sequences. It relies on the Difflib module. \cite{fuzzywuzzy}-\cite{fuzzywuzzy-git}
 
+        We use the Simple Ratio method of FuzzyWuzzy to calculate the similarity between two strings.The similarity is an integer ranging from 0 to 100. When two strings are exactly the same, the similarity is 100. For a 5-character string, if we compare it with another string which has one character different, as shown in the following code, the similarity is 80.
+        
+        \begin{lstlisting}
+>>> from fuzzywuzzy import fuzz
+>>> fuzz.ratio("A1532", "A15B2")
+80      \end{lstlisting}
+
+
+        Here we can understand calculating Levenshtein Distance between two words is more complicated and takes much longer time than simply comparing if the two words are identical.
+
 
 %+++++++++++++++++++++++++++++++++++++++++++++++
 \section{Proposal of Speed-up Method}
-\label{sec:algorithm}
+\label{sec:proposal}
     In this section, we propose the speed-up method for the Fuzzy search process in the product label recognition system.
 
     \subsection{System Overview}
@@ -146,6 +174,8 @@ OCR, fuzzy search, regular expression, partial word matching
         Our input are picture of product labels and a prepared master database.
 
         \subsubsection{Product Labels}
+        \label{sec:label-request}
+
             The picture must be taken from the front of the product label and ensure that the ambient light is good so that the text on the label is clearly identifiable and try to avoid reflections. As the brightness, contrast, or other environmental condition when the pictures of product labels are taken changes, the accuracy of recognition can fluctuate significantly. The picture can be simply taken by smart phones or digital cameras. Like the picture shown in figure \ref{fig:label-exp}, we should take the label only with as few unrelated backgrounds as possible.
 
             \begin{figure}[t] 
@@ -206,24 +236,16 @@ Matched Model:
 
             \begin{center}
             \begin{BVerbatim}
-[ :]*(([a-zA-Z0-9\-\/\(\)]{4,} (?=[ a-zA-Z
-0-9\-\/\(\)]*[0-9])[ a-zA-Z0-9\-\/\(\)]+)|
-((?=[a-zA-Z0-9\-\/\(\)]*[0-9])[a-zA-Z0-9\-
-\/\(\)]{4,}))[ ,.]*
+[ :]*((?=[a-zA-Z0-9\-\/\(\)]*[0-9])
+[a-zA-Z0-9\-\/\(\)]{4,})[ ,.]*
             \end{BVerbatim}
             \end{center}
     
             The {\em [ :]*} in the beginning is set to exclude any possible guiding space or colon before the alphanumeric string we need.
 
-            Then we have a long expression in brackets with a pipe symbol in the middle: {\em (([a-zA-Z0-9\-\/\(\)]\{4,\} (?=[ a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]*[0-9])[ a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]+)|((?=[a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]*[0-9])[a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]\{4,\})) }. This means the expression match either of the two alternatives defined by the expression before and after the pipe symbol.
+            Then we have a long expression in brackets: {\em ((?=[a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]*[0-9])[a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]\{4,\}) }. Here the {\em (?=[a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]*[0-9])} is called positive lookahead in regular expression, which asserts the following alphanumeric string, should be ending with a number. This positive lookahead just indicates what the following string should be like, but it does not actually pick any string, so the string we pick may contain a number in the middle rather than at the end. The following {\em [a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]\{4,\})} is the one who actually picks a string more than 4 characters in length, containing letters, numbers, brackets, hyphen, or slashes, but not spaces.
 
-            For the first alternative, the {\em [a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]\{4,\}} matches any string more than four characters in length, containing letters, numbers, brackets, hyphen, or slashes. Then we meet a white space, the following {\em (?=[ a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]*[0-9])} is called positive lookahead in regular expression, which asserts the following alphanumeric string, with or without a space, should be ending with a number. This positive lookahead just indicates what the following string should be like, but it does not actually pick any string, so the string we pick may contain a number in the middle rather than at the end. The following {\em [ a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]+ } is the one who actually picks a string more than 1 character in length, containing letters, numbers, brackets, hyphen, slashes, or spaces.
-
-            This alternative means, if the alphanumeric string we want has one or more white space, the part before the first white space must be longer than 4 characters, and the part after the first white space must contains at least one number.
-
-            For the second alternative, there is also a positive lookahead {\em (?=[a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]*[0-9]) }. But unlike the first alternative, this positive lookahead doesn't contain a white space. With the following {\em [a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]\{4,\} }, it means to pick up any string more than four characters in length, containing letters, numbers, brackets, hyphen, or slashes, but not spaces.
-
-            In other words, the second alternative means, if the alphanumeric string we want contains no space, it must be more than four characters in length, containing letters, numbers, brackets, hyphen, or slashes.
+            In other words, this part means, the alphanumeric string we want must be more than four characters in length, containing letters, numbers, brackets, hyphen, or slashes.
 
             Finally we have {\em [ ,.]*} in the end, which is used to exclude any possible following space, comma, or dot after the alphanumeric string we need, and make sure the string ends at the correct position.
 
@@ -231,16 +253,6 @@ Matched Model:
         \subsubsection{Fuzzy Search in Master Database}
             Then, we do fuzzy search in all the records in the master database, to find model texts most similar to any of the alphanumeric strings, which are the most possible real model. This can tolerate OCR recognition errors. Specifically in this proposal, we use {\em FuzzyWuzzy} to calculate the similarity between two strings.
             
-            The similarity is an integer ranging from 0 to 100. When two strings are exactly the same, the similarity is 100. When a recognition error occurs, for a common 5-character model string, take the amount of character error as 1, as shown in figure \ref{fig:code_fuzzwuzzy}, the similarity is 80.
-        
-            \begin{figure}[tb]
-                \begin{lstlisting}
->>> from fuzzywuzzy import fuzz
->>> fuzz.ratio("A1532", "A15B2")
-80              \end{lstlisting}
-                \caption{The similarity of a 5-character string with 1-character error}
-                \label{fig:code_fuzzwuzzy}
-            \end{figure}
             With Fuzzy Search, for each identified alphanumeric string that may be model text, we compare it with all the model texts recorded in the master database, to calculate their similarity. The several matching results (5 by default) with highest similarity among all results are taken as candidates for output, which can ensure a higher accuracy.
 
     \subsection{Proposal of Speed-up Method}
@@ -252,7 +264,7 @@ Matched Model:
 
         \subsubsection{Partial Word Matching}
 
-            For the OCR errors of model text, in the 300 （要修正） test cases we conducted, there were 10 （要修正） times that 1 character was incorrectly recognized, and there was no case with more than 2 recognition errors. Therefore, it can be considered that in most cases, the number of incorrectly recognized characters will not exceed one.
+            For the OCR errors of model text, in most cases, the number of incorrectly recognized characters may not exceed one.
 
             Thus we divide one alphanumeric string into two halves. For each half, partial matching is performed. Like in table \ref{table:half_matching}. We use partial matching rather than forward or backward matching so that we can avoid OCR text missing.
 
@@ -284,7 +296,7 @@ Matched Model:
     In this section, we evaluate the proposal. 
 
     \subsection{Photo Source}
-        We took more than 300 photos to perform the test, all of them match the request.
+        We took more than 400 photos to perform the test, and we used 396 of them which match the photo request described in section \ref{sec:label-request}.
 
     \subsection{Regular Expression Used for Matching}
 
@@ -296,46 +308,48 @@ Matched Model:
             \label{fig:result-regex}
         \end{figure}
 
-        As shown in figure \ref{fig:result-regex}, which is a test result using regex101\cite{regex101}. The red and orange marks in test string are the alphanumeric strings matched. We can see that the correct model {\em ADP-60NH} is among the result. Although the same string is matched multiple times, we can remove the duplicate ones later.
+        As shown in figure \ref{fig:result-regex}, which is a test result using regex101\cite{regex101}. The green marks in test string are the alphanumeric strings matched. We can see that the correct model {\em ADP-60NH} is among the result. Although the same string is matched multiple times, we can remove the duplicate ones later.
 
     \subsection{Result}
             
-        We conducted 300 searches in a master database with 550,000 records.
+        We conducted 396 searches in a master database with 553,887 records.
 
         \subsubsection{Regular Expression Matching Rate}
 
-            \begin{table*}[t]
+            \begin{table}[t]
                 \caption{Regular expression matching result [DATA NEEDS CORRECTION]}
                 \label{table:regex_result}
                 \begin{center}
                     \begin{tabular}{c|c}
                     \Hline
-                    Items Tested & 300 \\ 
+                    Items Tested & 396 \\ 
                     % \hline
-                    Correct Model Extracted in Results & 290 \\ 
+                    Correct Model Extracted in Results & 311 \\ 
                     % \hline
-                    Correct Model Missed in Results & 10 \\ 
+                    Correct Model Missed in Results & 85 \\ 
                     % \hline
-                    Correct Extracting Rate (\%) & 99 \\ 
+                    Correct Extracting Rate (\%) & 78.54 \\ 
                     % \hline
-                    Average Amount of Strings Extracted for One Item & 99 \\ 
+                    Average Amount of Strings Extracted for One Item & 8.654 \\ 
                     % \hline
-                    Mininum Amount of Strings Extracted for One Item & 99 \\ 
+                    Mininum Amount of Strings Extracted for One Item & 1 \\ 
                     % \hline
-                    Maximum Amount of Strings Extracted for One Item & 99 \\ 
+                    Maximum Amount of Strings Extracted for One Item & 38 \\ 
                     \Hline
                     \end{tabular}
                 \end{center}
-            \end{table*}
+            \end{table}
 
-            As shown in table \ref{table:regex_result}, among all the tests, in most cases the alphanumeric string containing correct model is successfully extracted by our regular expression. The correct extracting rate is up to 99\%. There are still 10 cases in which our regular expression failed to match the correct model. The average amount of strings extracted for one item is ??. All these results will be used as keywords in later fuzzy search. The minimum amount of strings extracted for one item is 3, while the maximum is 10.
+            As shown in table \ref{table:regex_result}, among all the tests, in most cases the alphanumeric string containing correct model is successfully extracted by our regular expression. The correct extracting rate is about 78.54\%. There are still 85 cases in which our regular expression failed to match the correct model. But this does not cause an overall failure because we still have fuzzy search to correct minor matching errors.
+            
+            The average amount of strings extracted for one item is 8.654. All these results will be used as keywords in later fuzzy search. The minimum amount of strings extracted for one item is 1, while the maximum is 38.
 
         \subsubsection{Speed-up Method for Fuzzy Search Process}
 
             The time consumed is shown in the table \ref{table:methods_compare}.
     
             \begin{table*}[t]
-                \caption{Performance result using different searching methods [DATA NEEDS CORRECTION]}
+                \caption{Performance result using different searching methods}
                 \label{table:methods_compare}
                 \begin{center}
                     \begin{tabular}{c|cc}
@@ -344,63 +358,93 @@ Matched Model:
                         \begin{tabular}{c} Conventional Method \end{tabular} &
                         \begin{tabular}{c} Speed-up Method \end{tabular} \\ 
                     \hline
-                    1st candidate in matching list was correct &
-                        290 & \\ 
+                    Recognized as the 1st candidate in matching list &
+                        340 & 339\\ 
                     \hline
-                    2nd candidate in matching list was correct &
-                        9 & \\ 
+                    Recognized in top 5 candidates in matching list &
+                        361 & 360\\ 
                     \hline
                     Recognition Rate &
-                        99.67\% & \\ 
+                        91.16\% & 90.91\%\\ 
                     \hline
                     Average Search Time &
-                        120s & 0.13s \\ 
+                        15.241s & 0.984s \\ 
+                    \hline
+                    Median Search Time &
+                        12.470s & 0.910s \\ 
                     \hline
                     Maximum Search Time &
-                        180s & 13s \\ 
+                        64.273s & 3.004s \\ 
                     \hline
                     Average Search Range (DB Record Amount) &
-                        550,000 & 3,000 \\
+                        553,887.00 & 1,347.68 \\
                     \Hline
                     \end{tabular}
                 \end{center}
             \end{table*}
 
-            Using conventional method, there are 290 cases in which the first candidate in result list is the correct one. In 9 cases the second one. If we consider matched in the first 2 candidates as successful recognition, the recognition rate is 99.67\%. The average searching time for each item is 120s, while the maximum is 180s. As for each item we look up all the records in master DB, the average search range is the amount of records in DB, 550,000.
+            Using conventional method, there are 340 cases in which the first candidate in result list is the correct one. In 361 cases the correct models are among the top 5 candidates. If we consider matched in the top 5 candidates as successful recognition, the recognition rate is 91.16\%. The average searching time for each item is 15.241s, median is 12.470s, while the maximum is 64.273s. As for each item we look up all the records in master DB, the average search range is the amount of records in DB, 553,887.
             
-            Using speed-up method, The average search range for each item, which means the amount of DB record we looked up in fuzzy search, is 3,000.
+            Using speed-up method, there are 339 cases in which the first candidate in result list is the correct one. In 360 cases the correct models are among the top 5 candidates. If we consider matched in the top 5 candidates as successful recognition, the recognition rate is 90.91\%. The average searching time for each item is 0.984s, median is 0.910s, while the maximum is 3.004s. The average search range for each item, which means the amount of DB record we looked up in fuzzy search, is 1,347.68.
 
             \begin{table*}[t]
-                \caption{Performance result using different searching methods [DATA NEEDS CORRECTION]}
+                \caption{Performance result using different searching methods}
                 \label{table:slowest_rec}
                 \begin{center}
-                    \begin{tabular}{c|c|c|c|c|c|c}
+                    \begin{tabular}{c|c|c|c|c|c|c|c}
                     \Hline
-                    No. &
-                        Real Product Model &
-                        \begin{tabular}{c}Query Alphanumeric\\String (OCR result)\end{tabular} &
-                        \begin{tabular}{c}Limiting Time\\(Partial Word Matching\\Costed Time)\end{tabular} &
-                        \begin{tabular}{c}Fuzzy Search\\Costed Time\end{tabular} &
-                        \begin{tabular}{c}Fuzzy Search Range\\(DB Record Amount)\end{tabular} &
-                        \begin{tabular}{c}Total Costed Time\end{tabular} \\ 
+                        \begin{tabular}{c}Real \\Model\end{tabular} &
+                        \begin{tabular}{c}Reuglar\\Expression\\Matching Results\end{tabular} &
+                        \begin{tabular}{c}Reuglar\\Expression\\Matching Correct\end{tabular} &
+                        \begin{tabular}{c}Partial Word\\Matching\\Costed Time (s)\end{tabular} &
+                        \begin{tabular}{c}Fuzzy Search\\Total Costed\\Time (s)\end{tabular} &
+                        \begin{tabular}{c}Fuzzy Search\\Range (DB\\Record Amount)\end{tabular} &
+                        \begin{tabular}{c}Fuzzy\\Search\\1st matched\end{tabular} &
+                        \begin{tabular}{c}Fuzzy Search\\top 5\\matched\end{tabular} \\ 
                     \Hline
-                    1 & & & & & & \\ 
+                    DC35 & 14 & False & 0.26997 & 1.80353 & 24675 & False & False \\ 
                     \hline
-                    2 & & & & & & \\ 
+                    DM-E25AW & 29 & True & 0.35329 & 2.41260 & 2912 & True & True \\ 
+                    \hline
+                    TPC-F026-SF & 23 & False & 0.33008 & 2.51139 & 6761 & True & True \\ 
+                    \hline
+                    K04A-WH & 38 & True & 0.46103 & 2.53164 & 5009 & True & True \\ 
+                    \hline
+                    MRO-GS8 & 22 & True & 0.31031 & 2.91033 & 3822 & True & True \\ 
+                    \hline
+                    NE-BS805-K & 33 & True & 0.40080 & 3.00420 & 5574 & True & True \\ 
                     \Hline
                     \end{tabular}
                 \end{center}
             \end{table*}
 
-            Among the Fuzzy Search limited by partial word matching results, the several experiments in which the time-consuming is significantly higher than the average time-consuming are as in the table \ref{table:slowest_rec}. We can see the time costed is from ??s to ??s, with searching ranges of ?? to ?? records.
+            Among the Fuzzy Search limited by partial word matching results, the several experiments in which the time-consuming is significantly higher than the average time-consuming are as in the table \ref{table:slowest_rec}. We can see the time costed is up to 3.004s, with searching ranges of up to 24675 records.
     
             
 %+++++++++++++++++++++++++++++++++++++++++++++++
 \section{Conclusion}
 \label{sec:conclusion}
-    Using the speed-up method can effectively reduce the time into the acceptable range while increasing the accuracy rate to be close to that of the conventional method. With this method, we can take a balance between searching speed and mistake prevention for OCR text, and successfully limit the search range into several thousand (about 0.3\% of all data amount). In most cases the search result would come out in only less than 1 second which is acceptable for users to wait. Our speed-up method for fuzzy search is proved to be effective.
+    Using the speed-up method can effectively reduce the time into the acceptable range while increasing the accuracy rate to be close to that of the conventional method. With this method, we can take a balance between searching speed and mistake prevention for OCR text, and successfully limit the search range into over one thousand (about 0.24\% of all data amount). In most cases the search result would come out in only less than 2 seconds which is acceptable for users to wait.
     
-    It can be seen from table \ref{table:slowest_rec} that for few cases, after the limitation of character recognition, the search range is still large, thus it took longer than average time and not as fast as expected. The longest searching time of over 13 seconds. This indicates that we can still do more to further improve this method.
+    As shown in figure \ref{fig:graph-time} and \ref{fig:graph-recognized}, our speed-up method for fuzzy search is proved to be effective.
+
+    \begin{figure}[t] 
+        \begin{center}
+        \includegraphics[width=0.48\textwidth]{figure/graph-time.pdf}
+        \end{center}
+        \caption{Search Time Comparation}
+        \label{fig:graph-time}
+    \end{figure}
+
+    \begin{figure}[t] 
+        \begin{center}
+        \includegraphics[width=0.48\textwidth]{figure/graph-recognized.pdf}
+        \end{center}
+        \caption{Search Time Comparation}
+        \label{fig:graph-recognized}
+    \end{figure}
+    
+    It can be seen from table \ref{table:slowest_rec} that for few cases, after the limitation of character recognition, the search range is still large, thus it took longer than average time and not as fast as expected. The longest searching time of over 3 seconds. This indicates that we can still do more to further improve this method.
     
     We consider that, for each record in the master database, we can add not only the model text information of the product, but also its brand or manufacturer information. Before doing fuzzy search, we can also use other recognition methods to match and analyze the text contained in the OCR results to determine the brand of the product, and use brand information matching to further limit the search range of fuzzy search for model texts, which may further improve searching performance.
 
@@ -413,8 +457,13 @@ Matched Model:
 %\bibliographystyle{sieicej}
 %\bibliography{myrefs}
 \begin{thebibliography}{99}% 文献数が10未満の時 {9}
+    \bibitem{fuzzywuzzy-guidence}
+    \url{https://towardsdatascience.com/fuzzywuzzy-fuzzy-string-matching-in-python-beginners-guide-9adc0edf4b35}
+    
     \bibitem{levenshtein}
     \url{https://en.wikipedia.org/wiki/Levenshtein_distance}
+
+
 
     \bibitem{fuzzywuzzy}
     \url{https://chairnerd.seatgeek.com/fuzzywuzzy-fuzzy-string-matching-in-python/}
@@ -422,39 +471,40 @@ Matched Model:
     \bibitem{fuzzywuzzy-git}
     \url{https://github.com/seatgeek/fuzzywuzzy}
 
+
     \bibitem{regex101}
     \url{https://regex101.com/}
 
 
-    \bibitem{Funabiki13} 
-    N. Funabiki, Y. Matsushima, T. Nakanishi, and N. Amano, "A Java programming learning assistant system using test-driven development method," \emph{IAENG Int. J. Comput. Sci.}, vol. 40, no.1, pp. 38-46, Feb. 2013.
+    % \bibitem{Funabiki13} 
+    % N. Funabiki, Y. Matsushima, T. Nakanishi, and N. Amano, "A Java programming learning assistant system using test-driven development method," \emph{IAENG Int. J. Comput. Sci.}, vol. 40, no.1, pp. 38-46, Feb. 2013.
     
-    \bibitem{Zaw15}
-    K. K. Zaw, N. Funabiki, and W.-C. Kao, "A proposal of value trace problem for algorithm code reading in Java programming learning assistant system," \emph{Inf. Eng. Express}, vol. 1, no. 3, pp. 9-18, Sep. 2015.
+    % \bibitem{Zaw15}
+    % K. K. Zaw, N. Funabiki, and W.-C. Kao, "A proposal of value trace problem for algorithm code reading in Java programming learning assistant system," \emph{Inf. Eng. Express}, vol. 1, no. 3, pp. 9-18, Sep. 2015.
     
-    \bibitem{Funabiki17} 
-    N. Funabiki, Tana, K. K. Zaw, N. Ishihara, and W.-C. Kao, "A graph-based blank element selection algorithm for fill-in-blank problems in Java programming learning assistant system, \emph{IAENG Int. J. Comput. Sci.}, vol. 44, no. 2, pp. 247-260, May 2017.
+    % \bibitem{Funabiki17} 
+    % N. Funabiki, Tana, K. K. Zaw, N. Ishihara, and W.-C. Kao, "A graph-based blank element selection algorithm for fill-in-blank problems in Java programming learning assistant system, \emph{IAENG Int. J. Comput. Sci.}, vol. 44, no. 2, pp. 247-260, May 2017.
     
-    \bibitem{cup}
-    CUP, \url{http://czt.sourceforge.net/dev/java-cup/manual.html}
+    % \bibitem{cup}
+    % CUP, \url{http://czt.sourceforge.net/dev/java-cup/manual.html}
     
-    \bibitem{scope}
-    Scope, https://www.codesdope.com/blog/article/scope-of-variables-in-c/
+    % \bibitem{scope}
+    % Scope, https://www.codesdope.com/blog/article/scope-of-variables-in-c/
     
-    \bibitem{example}
-    \url{http://www.codebind.com/c-examples/}
+    % \bibitem{example}
+    % \url{http://www.codebind.com/c-examples/}
     
-    \bibitem{triangle}
-    \url{https://brilliant.org/wiki/pascals-triangle/}
+    % \bibitem{triangle}
+    % \url{https://brilliant.org/wiki/pascals-triangle/}
     
-    \bibitem{related1}
-    A. Kashihara, A. Terai, and J. Toyota, "Making fill-in-blank program problems for learning algorithm, " \emph{in Proc. Int. Conf. Comput. Edu.}, pp. 776-783, 1999.
+    % \bibitem{related1}
+    % A. Kashihara, A. Terai, and J. Toyota, "Making fill-in-blank program problems for learning algorithm, " \emph{in Proc. Int. Conf. Comput. Edu.}, pp. 776-783, 1999.
     
-    \bibitem{related2}
-    J. Shinkai, Y. Hayase, and I. Miyaji, "A study of generation and utilization of fill-in-the-blank questions for programming education on Moodle, " \emph{IEICE Technical Report}, vol. 110, no. 263, pp. 7-10, 2010.
+    % \bibitem{related2}
+    % J. Shinkai, Y. Hayase, and I. Miyaji, "A study of generation and utilization of fill-in-the-blank questions for programming education on Moodle, " \emph{IEICE Technical Report}, vol. 110, no. 263, pp. 7-10, 2010.
     
-    \bibitem{related3}
-    K. Terada, Y. Watanobe, "Automatic generation of fill-in-the-blank programming problems, " \emph{in Proc. IEEE Int. Symp. Embed. Mult./Many-core Sys.-on-Chip (MCSoC)}, pp. 187-193, 2019.
+    % \bibitem{related3}
+    % K. Terada, Y. Watanobe, "Automatic generation of fill-in-the-blank programming problems, " \emph{in Proc. IEEE Int. Symp. Embed. Mult./Many-core Sys.-on-Chip (MCSoC)}, pp. 187-193, 2019.
 \end{thebibliography}
 
 \end{document}
