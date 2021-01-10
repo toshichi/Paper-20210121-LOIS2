@@ -2835,8 +2835,8 @@
 \renewcommand{\theenumii}{\@alph\c@enumii}
 \renewcommand{\theenumiii}{\@roman\c@enumiii}
 \renewcommand{\theenumiv}{\@Alph\c@enumiv}
-\newcommand{\labelenumi}{\kern-.5zw （\,\theenumi\,）\kern-.5zw}
-\newcommand{\labelenumii}{\kern-.5zw （\,\theenumii\,）\kern-.5zw}
+\newcommand{\labelenumi}{\kern-.5zw (\,\theenumi\,)\kern-.5zw}
+\newcommand{\labelenumii}{\kern-.5zw (\,\theenumii\,)\kern-.5zw}
 \newcommand{\labelenumiii}{\theenumiii.}
 \newcommand{\labelenumiv}{\theenumiv.}
 \renewcommand{\p@enumii}{\theenumi}
@@ -3238,7 +3238,7 @@
 \def\@uketsuke{%
  \vskip6\@Q
  \raggedleft\rightskip1zw
-  （\mbox{\@received\@rec@rev@delimiter}\allowbreak 
+  (\mbox{\@received\@rec@rev@delimiter}\allowbreak 
     \ifx\@revised\@empty\else
      \mbox{\@revised\@rev@final@delimiter}\allowbreak 
     \fi
@@ -3246,7 +3246,7 @@
      \mbox{\@finalreceived\@final@online@delimiter}\allowbreak 
     \fi
     \mbox{\@onlinefirst}%
-  ）\kern-.5zw\par
+  )\kern-.5zw\par
 }
 
 \def\@rec@rev@delimiter{%
