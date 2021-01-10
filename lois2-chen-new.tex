@@ -51,7 +51,7 @@
 
 % \jtitle{タイトル}
 % \jsubtitle{}
-\etitle{A Proposal of Speed-up Method for Fuzzy Search Process in Product Label Recognition System}
+\etitle{A Study of Product Identification System Using Optical Character Recognition}
 % \esubtitle{}
 \authorlist{%
  \authorentry[chin-shiji@s.okayama-u.ac.jp]{陳 仕璽}{Shixi Chen}{okayama}
@@ -80,127 +80,158 @@ Otemachi 2-6-2, Chiyoda, Tokyo, 100-0004, Japan}
 
 \begin{eabstract}
     %background
-    Recently, the {\em optical character recognition (OCR)} technology has been remarkably progressed to result in the high recognition rate due to the advancements of {\em deep learning techniques}. Besides, smartphones equipped with cameras have broadly spread among people around the world. As a result, the information acquisition from an object ravel using a smartphone camera can be a good choice as the easy and quick way.
+    Recently, the {\em optical character recognition (OCR)} technology has been remarkably progressed due to the advancements of {\em deep learning techniques}. Besides, smartphones equipped with cameras have broadly spread among people around the world. As a result, the product identification from the product label photo using OCR becomes possible as the quick way to identify the product.
     %problem to be solved
-    However, the character recognition rate is still not $100\%$. Some characters are incorrectly recognized or missing in the recognition result. Then, if the correct characters to them have been stored as one record in a database, the {\em fuzzy search} can be applied to find the best matching record with the recognition result. Unfortunately, it will take long time if the database has a lot of records, because it spends much longer time to process one record. 
+    However, the accuracy of OCR is still not $100\%$. Some characters are incorrectly recognized or missing in the recognition result, which must be considered for use. 
     %contribution
-    In this study, we propose a speed-up method for the fuzzy search by limiting the processed records into possible ones where the part of the characters in the record is matching. 
+    In this study, we propose a {\em product identification system} applying OCR of the label photo taken by a smart phone. The {\em fuzzy search} is adopted to improve the accuracy by finding the best-matching record in the database for the possibly incorrect key by OCR. Since this search takes inadmissibly long time when the database has a lot of records, we also propose the speedup method by limiting the matching records. 
     %evaluation
-    For evaluations, we collect 396 photos of object ravels and their character recognition results, and apply our proposal to them. The results show that the proposal reduces the CPU time from $15.241sec$ to $0.984sec$ by limiting the number of search records into 0.24\% of all the records. However, the record hit rate is also reduced slightly from $91.16\%$ to $90.91\%$ whose improvement will be in future studies.
-    
+    For evaluations, we apply the proposal to $396$ label photos. The results show that the CPU time is $15.241sec$ by the naïve search, and $0.984sec$ by the speedup one that limits the number of matching records into $0.24\%$ of the naïve one, where the record hit rate is slightly reduced from $91.16\%$ to $90.91\%$.
 \end{eabstract}
+
 \begin{ekeyword}
-OCR, fuzzy search, regular expression, partial word matching
+product identification, OCR, fuzzy search, regular expression, partial word matching
 \end{ekeyword}
 \maketitle
 
 %+++++++++++++++++++++++++++++++++++++++++++++++
 \section{Introduction}
     %background
-    Recently, the {\em optical character recognition (OCR)} technology has been remarkably progressed to result in the high recognition rate due to the advancements of {\em deep learning techniques}. Besides, smartphones equipped with cameras have broadly spread among people around the world. As a result, the information acquisition from an object ravel using a smartphone camera can be a good choice as the easy and quick way.
+    Recently, the {\em optical character recognition (OCR)} technology has been remarkably progressed as the advancements of {\em deep learning techniques}, and resulted in the high recognition rate. Besides, smartphones equipped with cameras have broadly spread among people around the world. As a result, the product identification from the product label photo using OCR becomes possible as the quick way to identify the product.
 
     %problem to be solved
-    However, the character recognition rate is still not $100\%$. Some characters are incorrectly recognized or missing in the recognition result. Then, if the correct characters to them have been stored as one record in a database, the {\em fuzzy search} can be applied to find the best matching record with the recognition result. Unfortunately, it will take unacceptably long time if the database has a lot of records, because it spends much longer time to process one record. 
+    However, the character recognition rate of OCR is still not $100\%$. Some characters are incorrectly recognized or missing in the recognition result. Then, if a database is available where the correct characters or strings are stored at the record, the {\em fuzzy search} can be adopted to improve the accuracy by finding the best matching record with the recognition result by OCR. Unfortunately, this search will take inadmissibly long time if the database has a lot of records, because it spends much longer time to process one record. 
 
     %contribution
-    In this study, we propose a speed-up method for the fuzzy search by limiting the processed records into possible ones where the part of the characters in the record is matching. 
-    We divide one alphanumeric string into two halves. For each half, we use partial matching to query in the database, to find out records containing either half of the divided string. By dividing into two halves, we can ensure the correct model is in the matched range even if there is one incorrectly recognized or missing character in the recognition result. Then we perform {\em fuzzy search} in this matched range only instead of the whole database. 
+    In this study, we propose a {\em product identification system} that applies OCR of the label photo taken by a smart phone. The {\em fuzzy search} is adopted to improve the accuracy by finding the best-matching record in the database for the key string extracted by OCR. However, the fuzzy search takes inadmissibly long time when the database has a lot of records. It calculates the similarity distance between the key data and the stored data in each record. Therefore, we also propose the speedup method by limiting the matching records. 
+
+    %speedup method
+    The speedup method limits the matching records with the key that contain a part of the characters in the key. In this paper, the alphanumeric string of the key is divided into two halves, and the records containing either of the half string are extracted from the database. After that, the {\em fuzzy search} is applied to the extracted records only instead of the whole records. 
 
     %evaluation
-    For evaluations, we collect 396 photos of object ravels and their character recognition results, and apply our proposal to them. The results show that the proposal reduces the CPU time from $15.241sec$ to $0.984sec$ by limiting the number of search records into 0.24\% of all the records. However, the record hit rate is also reduced from $91.16\%$ to $90.91\%$ whose improvement will be in future studies.
-    Still, there are few cases which took longer than average time and not as fast as expected. With the longest searching time of over 13 seconds, our test result indicates that we can still do more to further improve this method.
+    For evaluations, we collect $396$ photos of various product labels and their OCR results, and apply our proposal to them. The application results show that the naïve fuzzy search takes $15.241sec$ for the CPU time achieves $91.16\%$ correct rate. Then, the speedup method drastically reduces the CPU time to $0.984sec$ and slightly decreases the correct rate to $90.91\%$, where the number of matching records becomes 0.24\% of the original. The improvement of the correct rate will be in future studies.
 
     %contents
     The rest of this paper is organized as follows:
-
-    Section \ref{sec:preliminary} shows preliminary technologies to this study.
-
-    Section \ref{sec:proposal} presents the speed-up method.
-
-    Section \ref{sec:evaluation} shows the evaluation results.
-
-    Finally, Section \ref{sec:conclusion} concludes this paper with future works.
+    Section~\ref{sec:preliminary} shows preliminary technologies to this study.
+    Section~\ref{sec:proposal} presents the product identification system with the naïve logic.
+    Section~\ref{sec:speedup} presents the speedup method for the {\em fuzzy search}.
+    Section~\ref{sec:evaluation} shows the evaluation results.
+    Finally, Section~\ref{sec:conclusion} concludes this paper with future works.
 
 
 %+++++++++++++++++++++++++++++++++++++++++++++++
 \section{Preliminary}
 \label{sec:preliminary}
-    In this section, we introduce preliminary technologies of our study in this paper.
+    In this section, we introduce preliminary technologies to our study in this paper.
 
     \subsection{Levenshtein Distance}
-        Levenshtein is an algorithm to calculate {\em mininum edit distace (MED)} \cite{fuzzywuzzy-guidence}. The Levenshtein distance is a string metric for measuring the difference between two sequences. Informally, the Levenshtein distance between two words is the minimum number of single-character edits (insertions, deletions or substitutions) required to change one word into the other. \cite{levenshtein}
+        The {\em Levenshtein distance} represents the string metric for measuring the difference between two sequences of strings \cite{fuzzywuzzy-guidence}. Informally, the {\em Levenshtein distance} between two words is given by the minimum number of single-character editions by either insertions, deletions, or substitutions that are required to change one word into another one, or the {\em mininum edit distace (MED)} \cite{fuzzywuzzy-guidence}-\cite{levenshtein}.         
 
-        The Levenshtein distance between two strings a and b is calculated by:
+        The {\em Levenshtein distance} between two strings $a$ and $b$, $lev(a, b)$, can be calculated recursively by:
 
-        \[
-            \operatorname{lev}(a, b)=\left\{\begin{array}{ll}
-            |a| & \text { if }|b|=0 \\
-            |b| & \text { if }|a|=0 \\
-            \operatorname{lev}(\operatorname{tail}(a), \operatorname{tail}(b)) & \text { if } a[0]=b[0] \\
-            1+\min \left\{\begin{array}{l}
-            \operatorname{lev}(\operatorname{tail}(a), b) \\
-            \operatorname{lev}(a, \operatorname{tail}(b)) \\
-            \operatorname{lev}(\operatorname{tail}(a), \operatorname{tail}(b))
-            \end{array}\right. & \text { otherwise. }
-            \end{array}\right.
-        \]
+        \begin{equation}
+                \operatorname{lev}(a, b)=\left\{\begin{array}{ll}
+                |a| & \text { if }|b|=0 \\
+                |b| & \text { if }|a|=0 \\
+                \operatorname{lev}(\operatorname{tail}(a), \operatorname{tail}(b)) & \text { if } a[0]=b[0] \\
+                1+\min \left\{\begin{array}{l}
+                \operatorname{lev}(\operatorname{tail}(a), b) \\
+                \operatorname{lev}(a, \operatorname{tail}(b)) \\
+                \operatorname{lev}(\operatorname{tail}(a), \operatorname{tail}(b))
+                \end{array}\right. & \text { otherwise. }
+                \end{array}\right.
+        \end{equation}
+
+        where $|x|$ represents the number of characters in the string $x$, $tail(x)$ is a string of all but the first character of string $x$, and $x[n]$ is the $n$th character of the string $x$, starting with character 0. Due to the recursive procedure, the calculation of the {\em Levenshtein distance} between two strings generally takes much longer time than the simple comparison of them.
 
     \subsection{FuzzyWuzzy}
-        FuzzyWuzzy is a Python library useing Levenshtein Distance to calculate the differences between sequences. It relies on the Difflib module. \cite{fuzzywuzzy}-\cite{fuzzywuzzy-git}
-
-        We use the Simple Ratio method of FuzzyWuzzy to calculate the similarity between two strings.The similarity is an integer ranging from 0 to 100. When two strings are exactly the same, the similarity is 100. For a 5-character string, if we compare it with another string which has one character different, as shown in the following code, the similarity is 80.
-        
+        {\em FuzzyWuzzy} is the {\em Python} library to calculate the similarity between two alphanumeric strings or sequences by calculating the {\em Levenshtein distance}, relying on the {\em Difflib} module \cite{fuzzywuzzy}-\cite{fuzzywuzzy-git}. In this paper, we use the {\em simple ratio method} of {\em FuzzyWuzzy} to calculate the similarity between two strings that is described by an integer from 0 to 100. When two strings are exactly the same, the similarity is 100. When a five-character string is examined, the similarity against a string that has one different character is $80$. {\bf Command 1} illustrates the command operation example using {\em FuzzyWuzzy} to two five-character strings where only the fourth one is different.
+     
+        \begin{center}\bf Command 1\end{center}
         \begin{lstlisting}
 >>> from fuzzywuzzy import fuzz
 >>> fuzz.ratio("A1532", "A15B2")
 80      \end{lstlisting}
 
-
-        Here we can understand calculating Levenshtein Distance between two words is more complicated and takes much longer time than simply comparing if the two words are identical.
-
-
-%+++++++++++++++++++++++++++++++++++++++++++++++
-\section{Proposal of Speed-up Method}
-\label{sec:proposal}
-    In this section, we propose the speed-up method for the Fuzzy search process in the product label recognition system.
-
-    \subsection{System Overview}
-        Our system is that user take a picture and give it to the system, the system will give the correct model of the product with the help of a prepared master DB.
-
-        In the proposal, first, {\em optical character recognition (OCR)} is used to convert the picture into text. Second, we use a regular expression to filter and extract all alphanumeric strings which have possibility to be model text from the OCR result. Then, we divide the alphanumeric strings into two halves, and use partial word matching to pick model texts containing either half from the master database, which is pre-prepared and contains a large number of product models. Finally, we do fuzzy search in all the models picked, to find model texts most similar to any of the alphanumeric strings, which are the most possible model. 
-        
-    \subsection{System Input}
-    \label{sec:algorithm.ocrregex}
-        Our input are picture of product labels and a prepared master database.
-
-        \subsubsection{Product Labels}
-        \label{sec:label-request}
-
-            The picture must be taken from the front of the product label and ensure that the ambient light is good so that the text on the label is clearly identifiable and try to avoid reflections. As the brightness, contrast, or other environmental condition when the pictures of product labels are taken changes, the accuracy of recognition can fluctuate significantly. The picture can be simply taken by smart phones or digital cameras. Like the picture shown in figure \ref{fig:label-exp}, we should take the label only with as few unrelated backgrounds as possible.
+    \subsection{Information on Product Label}
+        The proposed system identifies the product using the information on the product label. As shown in Figure~\ref{fig:label-exp}, the label usually displays the company name, the product name, the product model number, and the production slot number. Among them, the {\em product model number} is used to identify the product in our system, because it is usually uniquely assigned to each product regardless of different companies. Therefore, the accurate recognition of the {\em product model number} becomes the goal of this study.
 
             \begin{figure}[t] 
                 \begin{center}
                 \includegraphics[width=0.48\textwidth]{figure/label-exp.png}
                 \end{center}
-                \caption{An example picture of product label accepted by our system}
+                \caption{Example product label photo.}
                 \label{fig:label-exp}
             \end{figure}
 
 
-        \subsubsection{Master Database}
-            We have a {\em master database} containing a lot of prepared model texts. As shown in figure \ref{fig:db-sample}, this database is prepared in advance and should cover as many product models as the system may see in practice. The database is used for correcting possible OCR mistake and make sure the result model really exists. 
+%+++++++++++++++++++++++++++++++++++++++++++++++
+\section{Proposal of Product Identification System}
+\label{sec:proposal}
+    In this section, we propose a {\em product identification system} using OCR and a smartphone camera.
+    to fi applying OCR of the label photo taken by a smart phone. The {\em fuzzy search} is adopted to improve the accuracy by finding the best-matching record in the database for the possibly incorrect key by OCR. 
+
+    \subsection{System Overview}
+        Figure~\ref{fig:system} illustrates the overview of the proposed product identification system. As the system hardware, a smartphone is used to take a label photo of a target product, to upload the photo to the server, and to display the identification result to the user. Then, a server is adopted to run several programs including the OCR software, the database system, and the product identification program using {\em FuzzyWuzzy}. 
+
+            \begin{figure}[t] 
+                \begin{center}
+                \includegraphics[width=0.48\textwidth]{figure/system.pdf}
+                \end{center}
+                \caption{System overview.}
+                \label{fig:system}
+            \end{figure}
+
+\subsection{System Usage Procedure}
+    The usage procedure of the system is described as follows:
+
+    \begin{enumerate}
+        \item to take a photo of the product label using a smartphone and upload it to the server using the web browser,
+        \item to recognize the characters on the label from the photo using an OCR software on the server,
+        \item to extract a set of the candidate strings for the {\em product model number} from the recognized characters by using the {\em regular expression}, 
+        \item to calculate the similarity between each candidate string and every record in the database,
+        \item to select all the records that have the larger similarity than the given threshold and display the corresponding product model numbers in descending order of the similarity to the user. 
+    \end{enumerate}
+
+In the following subsections, the details of each step will be explained.
+
+\subsection{Label Photo by Smarphone}
+Please show the example user interface of the smartphone and explain how to use it, including taking photo and uploading it to the server.
+The photo must be taken from the front of the product label. It must ensure that the ambient light is good so that the text on the label is clearly identifiable and try to avoid reflections. As the brightness, contrast, or other environmental condition when the pictures of product labels are taken changes, the accuracy of recognition can fluctuate significantly. The picture can be simply taken by smart phones or digital cameras with as few unrelated backgrounds as possible.
+
+\subsection{Character Recognition by OCR Software}
+On the server, the label photo is input to an OCT software to recognize the characters in the photo.
+
+\subsection{Candidate Extraction by Regular Expression}
+The following regular expression is used to filter and extract all the alphanumeric strings from the OCR result, as the candidates to the product model number:
+
+            \begin{center}
+            \begin{BVerbatim}
+[ :]*((?=[a-zA-Z0-9\-\/\(\)]*[0-9])
+[a-zA-Z0-9\-\/\(\)]{4,})[ ,.]*
+            \end{BVerbatim}
+            \end{center}
+    
+The {\em [ :]*} in the beginning is set to exclude any possible guiding space or colon before the alphanumeric string we need. Then, in the long expression with the brackets, {\em ((?=[a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]*[0-9])[a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]\{4,\}) }, the {\em (?=[a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]*[0-9])} is called positive look-ahead in the regular expression. It asserts that the following alphanumeric string should be ending with a number.\cite{lookahead}-\cite{regex-tutorial} This positive look-ahead just indicates what the following string should be. However, it does not actually pick any string, so that the string may contain a number in the middle rather than at the end. The following {\em [a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]\{4,\})} is the one that actually picks a string more than four characters in the length, containing letters, numbers, brackets, hyphen, or slashes, without any space.
+In other words, the alphanumeric string must be more than four characters in the length, by containing letters, numbers, brackets, hyphen, or slashes.
+Finally {\em [ ,.]*} is used to exclude any possible following space, comma, or dot after the alphanumeric string, and make sure the string ends at the correct position.
+
+        
+\subsection{Similarity Calculation}
+    % \label{sec:algorithm.ocrregex}
+    If at least one candidate string for the product model number is extracted in the previous step, the similarity between each candidate string and every record in the database is calculated using {\em FuzzyWuzzy}. For this purpose, the database must be prepared in advance to contain the information data for any possible product to be identified in the system. Figure~\ref{fig:db-sample} shows a part of this database. The number of records in this database increases as the number of products to be identified by the system increases.
 
             \begin{figure}[t] 
                 \begin{center}
                 \includegraphics[width=0.48\textwidth]{figure/db-sample.png}
                 \end{center}
-                \caption{Part of the master database content}
+                \caption{Part of database records.}
                 \label{fig:db-sample}
             \end{figure}
 
-    
-    \subsection{System Output}
-        Our purpose is to output the model of the product in the picture. As shown in figure \ref{fig:result-sample}, the output is a list sorted by matching rate from high to low. The matching rate is an integer ranging from 0 to 100. When the OCR result text is identical as the model in a database record, the matching rate should be 100. The most possible model is the first one.
+\subsection{System Output}
+Finally, the system outputs all the product model numbers in the database that have the $70$ or larger similarity in descending order. Since the OCR accuracy is not high enough, our system outputs any possible candidate of the the product model number, and asks the user to choose one manually to improve the accuracy. Figure~\ref{fig:result-sample} shows the output to the label photo in Figure~\ref{fig:label-exp}??????. Here, seven candidates for the product model number are displayed. 
 
         \begin{figure}[t] 
             \begin{center}
@@ -222,42 +253,10 @@ Matched Model:
         \end{figure}
 
 
-    \subsection{Conventional Method}
-        In the conventional method, we use OCR, regular expression matching, and fuzzy search to get the result list.
-
-        \subsubsection{OCR}
-            First, OCR is used to convert the picture into text. OCR simply convert all the contents on the product label into text.
-        
-
-        \subsubsection{Regular Expression Matching}
-            Second, we use a regular expression to filter and extract all alphanumeric strings which have possibility to be model text from the OCR recognition result. As most model text are alphanumeric strings, this step can filter out all other contents unrelated to model from the label.
-
-            The regular expression we use:
-
-            \begin{center}
-            \begin{BVerbatim}
-[ :]*((?=[a-zA-Z0-9\-\/\(\)]*[0-9])
-[a-zA-Z0-9\-\/\(\)]{4,})[ ,.]*
-            \end{BVerbatim}
-            \end{center}
-    
-            The {\em [ :]*} in the beginning is set to exclude any possible guiding space or colon before the alphanumeric string we need.
-
-            Then we have a long expression in brackets: {\em ((?=[a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]*[0-9])[a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]\{4,\}) }. Here the {\em (?=[a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]*[0-9])} is called positive lookahead in regular expression, which asserts the following alphanumeric string, should be ending with a number. This positive lookahead just indicates what the following string should be like, but it does not actually pick any string, so the string we pick may contain a number in the middle rather than at the end. The following {\em [a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]\{4,\})} is the one who actually picks a string more than 4 characters in length, containing letters, numbers, brackets, hyphen, or slashes, but not spaces.
-
-            In other words, this part means, the alphanumeric string we want must be more than four characters in length, containing letters, numbers, brackets, hyphen, or slashes.
-
-            Finally we have {\em [ ,.]*} in the end, which is used to exclude any possible following space, comma, or dot after the alphanumeric string we need, and make sure the string ends at the correct position.
-
-
-        \subsubsection{Fuzzy Search in Master Database}
-            Then, we do fuzzy search in all the records in the master database, to find model texts most similar to any of the alphanumeric strings, which are the most possible real model. This can tolerate OCR recognition errors. Specifically in this proposal, we use {\em FuzzyWuzzy} to calculate the similarity between two strings.
-            
-            With Fuzzy Search, for each identified alphanumeric string that may be model text, we compare it with all the model texts recorded in the master database, to calculate their similarity. The several matching results (5 by default) with highest similarity among all results are taken as candidates for output, which can ensure a higher accuracy.
-
-    \subsection{Proposal of Speed-up Method}
-        In this subsection, we describe the details of the proposal of speed-up method: fuzzy search limited by partial word matching.
-
+%+++++++++++++++++++++++++++++++++++++++++++++++
+\section{Proposal of Speedup Method for Fuzzy Search}
+\label{sec:speedup}
+In this section, we present the speedup method for the fuzzy search using the partial word matching.
 
         \subsubsection{Half Divided String}
             Before doing fuzzy search, we divide the matched alphanumeric strings into two halves from the center of the string.
@@ -293,7 +292,7 @@ Matched Model:
 %+++++++++++++++++++++++++++++++++++++++++++++++
 \section{Evaluation}
 \label{sec:evaluation}
-    In this section, we evaluate the proposal. 
+    In this section, we evaluate the proposed system. 
 
     \subsection{Photo Source}
         We took more than 400 photos to perform the test, and we used 396 of them which match the photo request described in section \ref{sec:label-request}.
@@ -383,6 +382,8 @@ Matched Model:
                 \end{center}
             \end{table*}
 
+        \subsubsection{Analyse}
+
             Using conventional method, there are 340 cases in which the first candidate in result list is the correct one. In 361 cases the correct models are among the top 5 candidates. If we consider matched in the top 5 candidates as successful recognition, the recognition rate is 91.16\%. The average searching time for each item is 15.241s, median is 12.470s, while the maximum is 64.273s. As for each item we look up all the records in master DB, the average search range is the amount of records in DB, 553,887.
             
             Using speed-up method, there are 339 cases in which the first candidate in result list is the correct one. In 360 cases the correct models are among the top 5 candidates. If we consider matched in the top 5 candidates as successful recognition, the recognition rate is 90.91\%. The average searching time for each item is 0.984s, median is 0.910s, while the maximum is 3.004s. The average search range for each item, which means the amount of DB record we looked up in fuzzy search, is 1,347.68.
@@ -419,93 +420,80 @@ Matched Model:
             \end{table*}
 
             Among the Fuzzy Search limited by partial word matching results, the several experiments in which the time-consuming is significantly higher than the average time-consuming are as in the table \ref{table:slowest_rec}. We can see the time costed is up to 3.004s, with searching ranges of up to 24675 records.
+
+            
+            Using the speed-up method can effectively reduce the time into the acceptable range while increasing the accuracy rate to be close to that of the conventional method. With this method, we can take a balance between searching speed and mistake prevention for OCR text, and successfully limit the search range into over one thousand (about 0.24\% of all data amount). In most cases the search result would come out in only less than 2 seconds which is acceptable for users to wait.
+            
+            As shown in figure \ref{fig:graph-time} and \ref{fig:graph-recognized}, our speed-up method for fuzzy search is proved to be effective.
+
+            \begin{figure}[t] 
+                \begin{center}
+                \includegraphics[width=0.48\textwidth]{figure/graph-time.pdf}
+                \end{center}
+                \caption{Search Time Comparation}
+                \label{fig:graph-time}
+            \end{figure}
+
+            \begin{figure}[t] 
+                \begin{center}
+                \includegraphics[width=0.48\textwidth]{figure/graph-recognized.pdf}
+                \end{center}
+                \caption{Search Time Comparation}
+                \label{fig:graph-recognized}
+            \end{figure}
+            
+            It can be seen from table \ref{table:slowest_rec} that for few cases, after the limitation of character recognition, the search range is still large, thus it took longer than average time and not as fast as expected. The longest searching time of over 3 seconds. This indicates that we can still do more to further improve this method.
+            
+            We consider that, for each record in the master database, we can add not only the model text information of the product, but also its brand or manufacturer information. Before doing fuzzy search, we can also use other recognition methods to match and analyze the text contained in the OCR results to determine the brand of the product, and use brand information matching to further limit the search range of fuzzy search for model texts, which may further improve searching performance.
+
+            Also, for the result of regular expression shown in figure \ref{fig:result-regex}, we can see some alphanumeric strings unrelated with model also got matched. In future studies we need to find better patterns for regular expression to reduce unnecessary fuzzy searching.
+
+            As our output is a list of most possible models in the product label, it is possible that there are several similar models with the same matching rate. How to correctly pick out the correct one is still to be studied.
+        
     
             
 %+++++++++++++++++++++++++++++++++++++++++++++++
 \section{Conclusion}
 \label{sec:conclusion}
-    Using the speed-up method can effectively reduce the time into the acceptable range while increasing the accuracy rate to be close to that of the conventional method. With this method, we can take a balance between searching speed and mistake prevention for OCR text, and successfully limit the search range into over one thousand (about 0.24\% of all data amount). In most cases the search result would come out in only less than 2 seconds which is acceptable for users to wait.
-    
-    As shown in figure \ref{fig:graph-time} and \ref{fig:graph-recognized}, our speed-up method for fuzzy search is proved to be effective.
+    In this study, we proposed the {\em product identification system} using OCR of the label photo by a smart phone. The {\em fuzzy search} is adopted with the speedup method to improve the accuracy by finding the best-matching record in the database. The application results to $396$ label photos showed the effectiveness of the proposal. In future works, we will improve the user interface and further investigate the performance of the proposal with various product label photos.
 
-    \begin{figure}[t] 
-        \begin{center}
-        \includegraphics[width=0.48\textwidth]{figure/graph-time.pdf}
-        \end{center}
-        \caption{Search Time Comparation}
-        \label{fig:graph-time}
-    \end{figure}
-
-    \begin{figure}[t] 
-        \begin{center}
-        \includegraphics[width=0.48\textwidth]{figure/graph-recognized.pdf}
-        \end{center}
-        \caption{Search Time Comparation}
-        \label{fig:graph-recognized}
-    \end{figure}
-    
-    It can be seen from table \ref{table:slowest_rec} that for few cases, after the limitation of character recognition, the search range is still large, thus it took longer than average time and not as fast as expected. The longest searching time of over 3 seconds. This indicates that we can still do more to further improve this method.
-    
-    We consider that, for each record in the master database, we can add not only the model text information of the product, but also its brand or manufacturer information. Before doing fuzzy search, we can also use other recognition methods to match and analyze the text contained in the OCR results to determine the brand of the product, and use brand information matching to further limit the search range of fuzzy search for model texts, which may further improve searching performance.
-
-    Also, for the result of regular expression shown in figure \ref{fig:result-regex}, we can see some alphanumeric strings unrelated with model also got matched. In future studies we need to find better patterns for regular expression to reduce unnecessary fuzzy searching.
-
-    As our output is a list of most possible models in the product label, it is possible that there are several similar models with the same matching rate. How to correctly pick out the correct one is still to be studied.
-    
 
 %+++++++++++++++++++++++++++++++++++++++++++++++
 %\bibliographystyle{sieicej}
 %\bibliography{myrefs}
 \begin{thebibliography}{99}% 文献数が10未満の時 {9}
     \bibitem{fuzzywuzzy-guidence}
-    \url{https://towardsdatascience.com/fuzzywuzzy-fuzzy-string-matching-in-python-beginners-guide-9adc0edf4b35}
-    
+    T., B. (2020, November 14). \emph{FuzzyWuzzy: Fuzzy String Matching in Python, Beginner’s Guide.} Towards Data Science. \url{https://towardsdatascience.com/fuzzywuzzy-fuzzy-string-matching-in-python-beginners-guide-9adc0edf4b35}
+
+    \bibitem{string-correction}
+    Wagner, R. A., \& Fischer, M. J. (1974). The String-to-String Correction Problem. \emph{Journal of the ACM, 21(1)}, 168–173. \url{https://doi.org/10.1145/321796.321811}
+
+    \bibitem{guide-to-matching}
+    Navarro, G. (2001). A guided tour to approximate string matching. \emph{ACM Computing Surveys, 33(1)}, 31–88. \url{https://doi.org/10.1145/375360.375365}
+
     \bibitem{levenshtein}
-    \url{https://en.wikipedia.org/wiki/Levenshtein_distance}
-
-
+    Wikipedia contributors. (2020, December 15). \emph{Levenshtein distance.} Wikipedia. \url{https://en.wikipedia.org/wiki/Levenshtein_distance}
 
     \bibitem{fuzzywuzzy}
-    \url{https://chairnerd.seatgeek.com/fuzzywuzzy-fuzzy-string-matching-in-python/}
+    Cohen, A. (2011, July 8). \emph{FuzzyWuzzy: Fuzzy String Matching in Python.} ChairNerd. \url{https://chairnerd.seatgeek.com/fuzzywuzzy-fuzzy-string-matching-in-python/}
 
     \bibitem{fuzzywuzzy-git}
-    \url{https://github.com/seatgeek/fuzzywuzzy}
+    Seatgeek. (2020, February 14). \emph{FuzzyWuzzy.} GitHub. \url{https://github.com/seatgeek/fuzzywuzzy}
 
+    \bibitem{lookahead}
+    Goyvaerts, J. (2020, March 9). \emph{Positive and Negative Lookahead.} Regular-Expressions.info. \url{https://www.regular-expressions.info/lookaround.html}
+
+    \bibitem{lookahead-and-behind}
+    BoppreH, hwnd, Trzesniewski, L., Stribiżew, W., \& Ivanova, M.(n.d.). \emph{Regular Expressions - Lookahead and Lookbehind.} SO Documentation. Retrieved December 23, 2020, from \url{https://sodocumentation.net/regex/topic/639/lookahead-and-lookbehind}
+
+    \bibitem{regex-tutorial}
+    RegexTutorial.org. (n.d.). \emph{Positive \& Negative Lookahead.} Regex Tutorial. Retrieved December 14, 2020, from \url{https://www.regextutorial.org/positive-and-negative-lookahead-assertions.php}
 
     \bibitem{regex101}
-    \url{https://regex101.com/}
+    Dib, F. (2017, March 31). \emph{Online regex tester and debugger.} Regex101. \url{https://regex101.com/}
 
-
-    % \bibitem{Funabiki13} 
-    % N. Funabiki, Y. Matsushima, T. Nakanishi, and N. Amano, "A Java programming learning assistant system using test-driven development method," \emph{IAENG Int. J. Comput. Sci.}, vol. 40, no.1, pp. 38-46, Feb. 2013.
-    
-    % \bibitem{Zaw15}
-    % K. K. Zaw, N. Funabiki, and W.-C. Kao, "A proposal of value trace problem for algorithm code reading in Java programming learning assistant system," \emph{Inf. Eng. Express}, vol. 1, no. 3, pp. 9-18, Sep. 2015.
-    
-    % \bibitem{Funabiki17} 
-    % N. Funabiki, Tana, K. K. Zaw, N. Ishihara, and W.-C. Kao, "A graph-based blank element selection algorithm for fill-in-blank problems in Java programming learning assistant system, \emph{IAENG Int. J. Comput. Sci.}, vol. 44, no. 2, pp. 247-260, May 2017.
-    
-    % \bibitem{cup}
-    % CUP, \url{http://czt.sourceforge.net/dev/java-cup/manual.html}
-    
-    % \bibitem{scope}
-    % Scope, https://www.codesdope.com/blog/article/scope-of-variables-in-c/
-    
-    % \bibitem{example}
-    % \url{http://www.codebind.com/c-examples/}
-    
-    % \bibitem{triangle}
-    % \url{https://brilliant.org/wiki/pascals-triangle/}
-    
-    % \bibitem{related1}
-    % A. Kashihara, A. Terai, and J. Toyota, "Making fill-in-blank program problems for learning algorithm, " \emph{in Proc. Int. Conf. Comput. Edu.}, pp. 776-783, 1999.
-    
-    % \bibitem{related2}
-    % J. Shinkai, Y. Hayase, and I. Miyaji, "A study of generation and utilization of fill-in-the-blank questions for programming education on Moodle, " \emph{IEICE Technical Report}, vol. 110, no. 263, pp. 7-10, 2010.
-    
-    % \bibitem{related3}
-    % K. Terada, Y. Watanobe, "Automatic generation of fill-in-the-blank programming problems, " \emph{in Proc. IEEE Int. Symp. Embed. Mult./Many-core Sys.-on-Chip (MCSoC)}, pp. 187-193, 2019.
 \end{thebibliography}
 
 \end{document}
+
 
