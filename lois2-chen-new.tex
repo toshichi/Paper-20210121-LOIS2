@@ -113,15 +113,10 @@ product identification, OCR, fuzzy search, regular expression, partial word matc
 
     %contents
     The rest of this paper is organized as follows:
-
     Section~\ref{sec:preliminary} shows preliminary technologies to this study.
-
     Section~\ref{sec:proposal} presents the product identification system with the naïve logic.
-
     Section~\ref{sec:speedup} presents the speedup method for the {\em fuzzy search}.
-
     Section~\ref{sec:evaluation} shows the evaluation results.
-
     Finally, Section~\ref{sec:conclusion} concludes this paper with future works.
 
 %+++++++++++++++++++++++++++++++++++++++++++++++
@@ -146,7 +141,6 @@ product identification, OCR, fuzzy search, regular expression, partial word matc
                 \end{array}\right. & \text { otherwise. }
                 \end{array}\right.
         \end{equation}
-
         where $|x|$ represents the number of characters in the string $x$, $tail(x)$ is a string of all but the first character of string $x$, and $x[n]$ is the $n$th character of the string $x$, starting with character 0. Due to the recursive procedure, the calculation of the {\em Levenshtein distance} between two strings generally takes much longer time than the simple comparison of them.
 
     \subsection{FuzzyWuzzy}
@@ -173,11 +167,10 @@ product identification, OCR, fuzzy search, regular expression, partial word matc
 %+++++++++++++++++++++++++++++++++++++++++++++++
 \section{Proposal of Product Identification System}
 \label{sec:proposal}
-    In this section, we propose a {\em product identification system} using OCR and a smartphone camera.
-    to fi applying OCR of the label photo taken by a smart phone. The {\em fuzzy search} is adopted to improve the accuracy by finding the best-matching record in the database for the possibly incorrect key by OCR. 
+    In this section, we propose a {\em product identification system} using OCR and a smartphone camera. To identify the product handily, this system obtains the label photo using a smart phone. Then, the product information is extracted by applying OCR to the photo. The {\em fuzzy search} is adopted to improve the accuracy by finding the best-matching record in the database for the possibly incorrect key by OCR. 
 
     \subsection{System Overview}
-        Figure~\ref{fig:system} illustrates the overview of the proposed product identification system. As the system hardware, a smartphone is used to take a label photo of a target product, to upload the photo to the server, and to display the identification result to the user. Then, a server is adopted to run several programs including the OCR software, the database system, and the product identification program using {\em FuzzyWuzzy}. 
+        Figure~\ref{fig:system} illustrates the overview of the proposed product identification system. As the system hardware, a {\em smartphone} is used to take a label photo of a target product, to upload the photo to the {\em server}, and to display the identification result to the user. Then, the {\em server} is adopted to run several programs including the web server for the user interface on the smartphone, the interface program to the OCR software, the database system, and the product identification program using {\em FuzzyWuzzy}. 
 
         \begin{figure}[t] 
             \begin{center}
@@ -202,31 +195,32 @@ product identification, OCR, fuzzy search, regular expression, partial word matc
 
     \subsection{Label Photo by Smarphone}
     \label{sec:label-requirement}
-        Open the homepage of this tool, like shown in Figure~\ref{fig:homepage} click the file selection button to take a photo. The camera app of smartphone will be automatically called up.
+        The user interface for taking the label photo of a product is implemented on a web browser such as Google Chrome with HTML and JavaScript programs. Figure~\ref{fig:homepage} illustrates the web page to take a label photo using a smartphone. By clicking the file selection button on the page, the camera application in the smartphone will be automatically called up.
 
         \begin{figure}[t] 
             \begin{center}
             \includegraphics[width=0.48\textwidth]{figure/homepage.png}
             \end{center}
-            \caption{Web homepage.}
+            \caption{Web page for taking photo by smartphone.}
             \label{fig:homepage}
         \end{figure}
 
         \begin{figure}[t] 
             \begin{center}
-            \includegraphics[width=0.48\textwidth]{figure/camera.png}
+            \includegraphics[width=0.35\textwidth]{figure/camera.png}
             \end{center}
-            \caption{Take a photo and click OK.}
+            \caption{Smartphone interface after taking photo.}
             \label{fig:camera}
         \end{figure}
 
-        Like shown in Figure~\ref{fig:camera}, use the camera to take a photo and click OK, the browser will then upload the photo to the server. The photo must be taken from the front of the product label. It must ensure that the ambient light is good so that the text on the label is clearly identifiable and try to avoid reflections. As the brightness, contrast, or other environmental condition when the pictures of product labels are taken changes, the accuracy of recognition can fluctuate significantly. The picture should be taken with as few unrelated backgrounds as possible.
+        Figure~\ref{fig:camera} shows the user interface on the smartphone after taking a photo. By clicking the “OK” button, the photo will be uploaded to the server. The photo must be taken from the front of the product label. The ambient lighting should be sufficiently good so that the texts on the label can be clearly identified where reflections should be avoided. Besides, the photo should be taken with as few unrelated backgrounds as possible. As the brightness, the contrast, or the other environmental conditions can be changed depending on time and places, the accuracy of the OCR can fluctuate significantly. 
 
     \subsection{Character Recognition by OCR Software}
-        On the server, the label photo is input to an OCR software to recognize the characters in the photo.
+        On the server, the label photo is input to an OCR software to recognize the characters in the photo. The accuracy of the system mainly depends on the accuracy of the character recognition results by the OCR software. Unfortunately, we cannot find the commercial OCR software that can avoid a recognition error. Therefore, we propose the following procedure to improve the product identification accuracy of the system by compensating the insufficiency of the OCR software.
 
     \subsection{Candidate Extraction by Regular Expression}
-        The following regular expression is used to filter and extract all the alphanumeric strings from the OCR result, as the candidates to the product model number:
+    \label{sec:regex}
+        First, the following regular expression is applied to the recognized characters by the OCR software, to filter and extract all the alphanumeric strings from them as the candidates to the {\em product model number}:
 
             \begin{center}
             \begin{BVerbatim}
@@ -235,46 +229,47 @@ product identification, OCR, fuzzy search, regular expression, partial word matc
             \end{BVerbatim}
             \end{center}
     
-        The {\em [ :]*} in the beginning is set to exclude any possible guiding space or colon before the alphanumeric string we need. Then, in the long expression with the brackets, {\em ((?=[a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]*[0-9])[a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]\{4,\}) }, the {\em (?=[a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]*[0-9])} is called positive look-ahead in the regular expression. It asserts that the following alphanumeric string should be ending with a number\cite{lookahead}-\cite{regex-tutorial}. This positive look-ahead just indicates what the following string should be. However, it does not actually pick any string, so that the string may contain a number in the middle rather than at the end. The following {\em [a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]\{4,\})} is the one that actually picks a string more than four characters in length, containing letters, numbers, brackets, hyphen, or slashes, without any space.
+        The {\em [ :]*} in the beginning is set to exclude any possible guiding space or colon before the alphanumeric string we need. Then, in the long expression with the brackets, {\em ((?=[a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]*[0-9])[a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]\{4,\}) }, the {\em (?=[a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]*[0-9])} is called for the positive look-ahead in the regular expression. It asserts that the following alphanumeric string should be ending with a number\cite{lookahead}-\cite{regex-tutorial}. This positive look-ahead indicates what the following string should appear. 
 
-        In other words, the alphanumeric string must be more than four characters in the length, by containing letters, numbers, brackets, hyphen, or slashes.
+        However, it does not actually pick any string, so that the string may contain a number at the middle rather than at the end. Thus, the following {\em [a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]\{4,\})} is the one that actually picks a string that has more than four characters as the length, containing letters, numbers, brackets, hyphen, or slashes, without any space. In other words, the alphanumeric string for the candidate of the {\em product model number} must have more than four characters in the length, by containing letters, numbers, brackets, hyphen, or slashes only.
 
-        Finally {\em [ ,.]*} is used to exclude any possible following space, comma, or dot after the alphanumeric string, and make sure the string ends at the correct position.
+        At the last of the regular expression, {\em [ ,.]*} is used to exclude any possible following space, comma, or dot after the alphanumeric string, and make sure the string ends at the correct position.
 
         
 \subsection{Similarity Calculation}
     \label{sec:algorithm.ocrregex}
-        If at least one candidate string for the product model number is extracted in the previous step, the similarity between each candidate string and every record in the database is calculated using {\em FuzzyWuzzy}. For this purpose, the database must be prepared in advance to contain the information data for any possible product to be identified in the system. Figure~\ref{fig:db-sample} shows a part of this database. The number of records in this database increases as the number of products to be identified by the system increases.
+        Next, if at least one candidate string for the product model number is extracted in the previous step, the similarity between each candidate string and every corresponding record in the database is calculated using {\em FuzzyWuzzy}. For this purpose, the database should be prepared in advance to contain the related data for any possible product to be identified by the system. Table~\ref{fig:db-sample} shows a part of this database. The number of records in this database increases as the number of products to be identified by the system increases. As a result, the CPU time for the similarity calculation by {\em FuzzyWuzzy} can be inhibitory long as the user interactive system.
 
         \begin{figure}[t]
             \begin{center}
+               \caption{Part of database records.}
+                \label{fig:db-sample}
                 \begin{tabular}{l|l}
-                \Hline
-                name & model\_name \\
-                \Hline
-                CM 690 III & CMS-693-KKN1-JP \\
-                EVO Plus & MB-MC128GA \\
-                dynabook PC & PT45NWY-SHA \\
-                ThinkPad X1 Tablet & 20GH-A06VJP \\
-                GALAXY TAB A & SM-T510 \\
-                ThinkSystem & ST50 \\
-                au & T003 \\
-                ideapad S340-14IIL & 81VV \\
-                bizhub & 224e \\
-                COREFIDO & B820n \\
-                ThinkCentre & M900 Small \\
-                dynabook & PT45UWP-SWA \\
-                Smart-UPS 750 & SUA750JB \\
-                PageWide XL & XL 8000 \\                  
-                \Hline
+                    \Hline
+                    product\_name & model\_name \\
+                    \Hline
+                    I-O DATA & EX-LD2071TB \\
+                    CM 690 III & CMS-693-KKN1-JP \\
+                    EVO Plus & MB-MC128GA \\
+                    dynabook PC & PT45NWY-SHA \\
+                    ThinkPad X1 Tablet & 20GH-A06VJP \\
+                    GALAXY TAB A & SM-T510 \\
+                    ThinkSystem & ST50 \\
+                    au & T003 \\
+                    ideapad S340-14IIL & 81VV \\
+                    bizhub & 224e \\
+                    COREFIDO & B820n \\
+                    ThinkCentre & M900 Small \\
+                    dynabook & PT45UWP-SWA \\
+                    Smart-UPS 750 & SUA750JB \\
+                    PageWide XL & XL 8000 \\                  
+                    \Hline
                 \end{tabular}
             \end{center}
-            \caption{Part of database records.}
-            \label{fig:db-sample}
         \end{figure}
 
 \subsection{System Output}
-    Finally, the system outputs all the product model numbers in the database that have the $70$ or larger similarity in descending order. Since the OCR accuracy is not high enough, our system outputs any possible candidate of the the product model number, and asks the user to choose one manually to improve the accuracy. In most cases the first candidate is the correct one. Figure~\ref{fig:result-sample} shows the output to the label photo in Figure~\ref{fig:camera}. Here, seven candidates for the product model number are displayed, and the first one is correct.
+    Finally, the system outputs all the product model numbers in the database that have the $70$ or higher similarity in descending order. Since the OCR accuracy is not high enough, the system outputs any possible candidate of the product model number, and asks the user to choose one from them manually to improve the accuracy. In most cases, the first candidate is the correct one because it has the highest similarity. Figure~\ref{fig:result-sample} shows the output to the label photo in Figure~\ref{fig:camera}. Here, seven candidates for the product model number are displayed, and the first one is correct.
 
         \begin{figure}[t] 
             \begin{center}
@@ -299,50 +294,56 @@ Matched Model:
 %+++++++++++++++++++++++++++++++++++++++++++++++
 \section{Proposal of Speedup Method for Fuzzy Search}
 \label{sec:speedup}
-    In this section, we present the speedup method for the fuzzy search using the partial word matching.
+    In this section, we present the speedup method for the fuzzy search using the partial word matching to avoid the long response time of the system.
 
-    In the naïve logic, the most time-consuming procedure is {\em Similarity Calculation}. As the similarity between candidate strings and all the records in database have to be calculated. So we add several procedures to limit the range of records from the database, to speedup the calculation.
+    \subsection{Overview}
+        In the naïve logic, the most time-consuming procedure is the {\em similarity calculation} using {\em FuzzyWuzzy}, since the similarity between the candidate strings from the OCR software and all the records in database have to be calculated. For the speedup, we limit the records in the database for the similarity calculations. Here we select every record whose part is exactly matching with part of the divided candidate string, and calculate the similarity against the selected record only.
 
-        \subsection{Half Divided String}
-            After {\em Candidate Extraction by Regular Expression}, we divide each extracted candidate alphanumeric string into two halves from the center of the string.
+    \subsection{Half Divided String}
+        As the part of the candidate string, we use the first half and the second half of it. Thus, after the procedure of {\em Candidate Extraction by Regular Expression}, we divide each extracted candidate alphanumeric string into two halves at the center of the string.
 
-        \subsection{Partial Word Matching}
+    \subsection{Partial Word Matching} -> I cannot understand????
 
-            For the OCR errors of model text, in most cases, the number of incorrectly recognized characters may not exceed one.
+        It has been observed that in most cases of the OCR errors, the number of incorrectly recognized characters does not exceed one.
 
-            Thus we divide one alphanumeric string into two halves. For each half, partial matching is performed. Like in table \ref{table:half_matching}. We use partial matching rather than forward or backward matching so that we can avoid OCR text missing.
+        Thus we divide one alphanumeric string into two halves. For each half, partial matching is performed against every record in the database. Like in table \ref{table:half_matching}. We use partial matching rather than forward or backward matching so that we can avoid OCR text missing.
 
-            In this way, if the misrecognized character is in the second half, the first half is a correct recognition. Partial matching can ensure that the completely matched correct model from the master database is included in the matching result. Conversely, if the misrecognized character is in the first half, partial matching can also help us to match the correct model.
-            
-            Let the original label text be “MX1234567” and the OCR result be “MX12345b7”, with one error. As shown in table \ref{table:half_matching}, it is divided into “MX123” and “45b7”. The matching result will contain the correct “MX1234567” model and together with some other models sharing the same half with less similarity, then output all of them into the result list.
+        In this way, for example, if the misrecognized character is in the second half, the first half is a correct recognition. Partial matching can ensure that the completely matched correct model from the master database is included in the matching result. Conversely, if the misrecognized character is in the first half, partial matching can also help us to match the correct model.
+        
+        Let the original label text be “MX1234567” and the OCR result be “MX12345b7”, with one error. As shown in table \ref{table:half_matching}, it is divided into “MX123” and “45b7”. The matching result will contain the correct “MX1234567” model and together with some other models sharing the same half with less similarity, then output all of them into the result list.
 
-            \begin{table}[tb]
-                \caption{Half divided string and its matching results}
-                \label{table:half_matching}
-                \begin{center}
-                    \begin{tabular}{c|c|c}
-                    \Hline
-                    origional label text & \multicolumn{2}{c}{MX1234567} \\ 
-                    \hline
-                    OCR result & \multicolumn{2}{c}{MX12345{\em b}7} \\ 
-                    \hline
-                    half divided strings & \_\_MX123\_\_ & \_\_45{\em b}7\_\_ \\
-                    \hline
-                    matching results & \begin{tabular}{c}MX123\underline{4567}\\MX123\underline{5678}\\\underline{P}MX123\underline{5678}\\...\end{tabular} & (no result) \\
-                    \Hline
-                    \end{tabular}
-                \end{center}
-            \end{table}
+        \begin{table}[tb]
+            \caption{Half divided string and its matching results}
+            \label{table:half_matching}
+            \begin{center}
+                \begin{tabular}{c|c|c}
+                \Hline
+                origional label text & \multicolumn{2}{c}{MX1234567} \\ 
+                \hline
+                OCR result & \multicolumn{2}{c}{MX12345{\em b}7} \\ 
+                \hline
+                half divided strings & \_\_MX123\_\_ & \_\_45{\em b}7\_\_ \\
+                \hline
+                matching results & \begin{tabular}{c}MX123\underline{4567}\\MX123\underline{5678}\\\underline{P}MX123\underline{5678}\\...\end{tabular} & (no result)) \\
+                \Hline
+                \end{tabular}
+            \end{center}
+        \end{table}
         
 %+++++++++++++++++++++++++++++++++++++++++++++++
 \section{Evaluation}
 \label{sec:evaluation}
-    In this section, we evaluate the proposed system. 
-
-    \subsection{Photo Source}
-        We took more than 400 photos to perform the test, and we used 396 of them which match the photo request described in section \ref{sec:label-requirement}.
+    In this section, we evaluate the proposed system. For evaluations, we collected 396 phots of different products using the system
 
     \subsection{Regular Expression Used for Matching}
+
+        \begin{figure}[t] 
+            \begin{center}
+            \includegraphics[width=0.48\textwidth]{figure/label-regex-samp.png}
+            \end{center}
+            \caption{Product label photo used to test regular expression.}
+            \label{fig:label-regex-samp}
+        \end{figure}
 
         \begin{figure}[t] 
             \begin{center}
@@ -368,11 +369,11 @@ NEC Personal Products, Ltd. 0 2 0 85 6 -0 0
             \label{fig:result-regex}
         \end{figure}
 
-        As shown in figure \ref{fig:result-regex}, which is a test result using regex101\cite{regex101}. The red strings are the alphanumeric strings matched. We can see that the correct model {\em ADP-60NH} is among the result. Although the same string is matched multiple times, we can remove the duplicate ones later.
+        As shown in figure \ref{fig:result-regex}, we use a tool called regex101\cite{regex101}, to test our regular expression described in section \ref{sec:regex} with some text extracted by OCR of a label photo shown in Figure~\ref{fig:label-regex-samp}. The red strings are the alphanumeric strings matched, and will be exported as candidates. We can see that the correct model {\em ADP-60NH} is among the matched part. Although the same string is matched multiple times, we will remove the duplicate ones.
 
     \subsection{Result}
             
-        We conducted $396$ searches in a master database with $553887$ records.
+        We conducted 396 searches in a master database with 553,887 records.
 
         \subsubsection{Regular Expression Matching Rate}
 
