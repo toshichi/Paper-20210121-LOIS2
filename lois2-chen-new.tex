@@ -236,7 +236,7 @@ product identification, OCR, fuzzy search, regular expression, partial word matc
         At the last of the regular expression, {\em [ ,.]*} is used to exclude any possible following space, comma, or dot after the alphanumeric string, and make sure the string ends at the correct position.
 
         
-\subsection{Similarity Calculation}
+    \subsection{Similarity Calculation}
     \label{sec:algorithm.ocrregex}
         Next, if at least one candidate string for the product model number is extracted in the previous step, the similarity between each candidate string and every corresponding record in the database is calculated using {\em FuzzyWuzzy}. For this purpose, the database should be prepared in advance to contain the related data for any possible product to be identified by the system. Table~\ref{table:db-sample} shows a part of this database. The number of records in this database increases as the number of products to be identified by the system increases. As a result, the CPU time for the similarity calculation by {\em FuzzyWuzzy} can be inhibitory long as the user interactive system.
 
@@ -274,8 +274,8 @@ product identification, OCR, fuzzy search, regular expression, partial word matc
             \end{center}
         \end{table}
 
-\subsection{System Output}
-    Finally, the system outputs all the product model numbers in the database that have the $70$ or higher similarity in descending order. Since the OCR accuracy is not high enough, the system outputs any possible candidate of the product model number, and asks the user to choose one from them manually to improve the accuracy. In most cases, the first candidate is the correct one because it has the highest similarity. Figure~\ref{fig:result-sample} shows the output to the label photo in Figure~\ref{fig:camera}. Here, seven candidates for the product model number are displayed, and the first one is correct.
+    \subsection{System Output}
+        Finally, the system outputs all the product model numbers in the database that have the $70$ or higher similarity in descending order. Since the OCR accuracy is not high enough, the system outputs any possible candidate of the product model number, and asks the user to choose one from them manually to improve the accuracy. In most cases, the first candidate is the correct one because it has the highest similarity. Figure~\ref{fig:result-sample} shows the output to the label photo in Figure~\ref{fig:camera}. Here, seven candidates for the product model number are displayed, and the first one is correct.
 
         \begin{figure}[t] 
             \begin{center}
@@ -341,7 +341,7 @@ Matched Model:
 \label{sec:evaluation}
     In this section, we evaluate the proposed system. For evaluations, we collected 396 phots of different products using the system
 
-    \subsection{Candidates Exported by Regular Expression}
+    \subsection{Strings Extracted by Regular Expression}
 
         \begin{figure}[t] 
             \begin{center}
@@ -382,34 +382,35 @@ NEC Personal Products, Ltd. 0 2 0 85 6 -0 0
         We conducted 396 searches in a master database with 553,887 records.
 
         \subsubsection{Regular Expression Matching Rate}
+        \label{sec:regex-result}
 
-            \begin{table}[t]
+            \begin{table*}[t]
                 \caption{Regular expression matching result}
                 \label{table:regex_result}
                 \begin{center}
-                    \begin{tabular}{c|c}
+                    \begin{tabular}{c|c|c|c|c}
                     \Hline
-                    Items Tested & 396 \\ 
+                     & \begin{tabular}{c}Model extracted \\ exactly correct\end{tabular} & \begin{tabular}{c}Model extracted \\ partially correct\end{tabular} & \begin{tabular}{c}Model not extracted\end{tabular} & Total \\ 
+                    \hline
+                    Count & 311 & 78 & 7 & 396 \\
+                    Percentage (\%) & 78.5 & 19.7 & 1.8 & 100.0 \\
+                    Average count of strings extracted for one item & 8.39 & 10.13 & 3.86 & 8.65 \\ 
                     % \hline
-                    Correct Model Extracted in Results & 311 \\ 
+                    Maximum count of strings extracted for one item & 38 & 23 & 8 & 38 \\ 
                     % \hline
-                    Correct Model Missed in Results & 85 \\ 
-                    % \hline
-                    Correct Extracting Rate (\%) & 78.54 \\ 
-                    % \hline
-                    Average Amount of Strings Extracted for One Item & 8.654 \\ 
-                    % \hline
-                    Mininum Amount of Strings Extracted for One Item & 1 \\ 
-                    % \hline
-                    Maximum Amount of Strings Extracted for One Item & 38 \\ 
+                    Mininum count of strings extracted for one item & 1 & 1 & 2 & 1 \\ 
                     \Hline
                     \end{tabular}
                 \end{center}
-            \end{table}
+            \end{table*}
 
-            As shown in table \ref{table:regex_result}, among all the tests, in most cases the alphanumeric string containing correct model is successfully extracted by our regular expression. The correct extracting rate is about $78.54\%$. There are still $85$ cases in which our regular expression failed to match the correct model. But this does not cause an overall failure because we still have fuzzy search to correct minor matching errors.
+            As shown in table \ref{table:regex_result}, among all the $396$ tests, in $311$ cases the alphanumeric string containing correct model is successfully extracted by our regular expression. The correct extracting rate is about $78.5\%$.
             
-            The average amount of strings extracted for one item is $8.654$. All these results will be used as keywords in later fuzzy search. The minimum amount of strings extracted for one item is $1$, while the maximum is $38$.
+            In $19.7\%$ cases, the extracted strings are partially correct, with slightly errors caused by OCR. In these cases, the OCR error could be tolerated by later fuzzy search.
+            
+            There are still $1.8\%$ cases in which our regular expression failed to match the correct model. These cases are mostly caused by too-short model numbers.
+            
+            The average amount of strings extracted for one item is $8.65$. All these results will be used as keywords in later fuzzy search. The minimum amount of strings extracted for one item is $1$, while the maximum is $38$.
 
         \subsubsection{Speed-up Method for Fuzzy Search Process}
 
@@ -503,6 +504,8 @@ NEC Personal Products, Ltd. 0 2 0 85 6 -0 0
     In this section, we conclude this study with future works.
 
     In this study, we proposed the {\em product identification system} using OCR of the label photo by a smart phone. The {\em fuzzy search} is adopted with the speedup method to improve the accuracy by finding the best-matching record in the database. The application results to $396$ label photos showed the effectiveness of the proposal. In future works, we will improve the user interface and further investigate the performance of the proposal with various product label photos.
+
+    As mentioned in section~\ref{sec:regex-result}, all the extracted strings by the regular expression are used as keywords in fuzzy search. But we can find out that in most cases the model number is exactly exported by the regular expression, and do not need futher correction or be tolerated by fuzzy search. So in the future, after doing partial matching for both halves of exported strings, we can compare the results between them. If one model number is matched by both halves, that means the string could be exactly the model number, and can be outputed as the result, no more similarity calculation is needed. This may make the whole process even more faster.
             
     We consider that, for each record in the master database, we can add not only the model text information of the product, but also its brand or manufacturer information. Before doing fuzzy search, we can also use other recognition methods to match and analyze the text contained in the OCR results to determine the brand of the product, and use brand information matching to further limit the search range of fuzzy search for model texts, which may further improve searching performance.
 
