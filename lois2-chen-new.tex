@@ -238,12 +238,12 @@ product identification, OCR, fuzzy search, regular expression, partial word matc
         
 \subsection{Similarity Calculation}
     \label{sec:algorithm.ocrregex}
-        Next, if at least one candidate string for the product model number is extracted in the previous step, the similarity between each candidate string and every corresponding record in the database is calculated using {\em FuzzyWuzzy}. For this purpose, the database should be prepared in advance to contain the related data for any possible product to be identified by the system. Table~\ref{fig:db-sample} shows a part of this database. The number of records in this database increases as the number of products to be identified by the system increases. As a result, the CPU time for the similarity calculation by {\em FuzzyWuzzy} can be inhibitory long as the user interactive system.
+        Next, if at least one candidate string for the product model number is extracted in the previous step, the similarity between each candidate string and every corresponding record in the database is calculated using {\em FuzzyWuzzy}. For this purpose, the database should be prepared in advance to contain the related data for any possible product to be identified by the system. Table~\ref{table:db-sample} shows a part of this database. The number of records in this database increases as the number of products to be identified by the system increases. As a result, the CPU time for the similarity calculation by {\em FuzzyWuzzy} can be inhibitory long as the user interactive system.
 
-        \begin{figure}[t]
+        \begin{table}[tb]
+            \caption{Part of database records.}
+            \label{table:db-sample}
             \begin{center}
-               \caption{Part of database records.}
-                \label{fig:db-sample}
                 \begin{tabular}{l|l}
                     \Hline
                     product\_name & model\_number \\
@@ -272,7 +272,7 @@ product identification, OCR, fuzzy search, regular expression, partial word matc
                     \Hline
                 \end{tabular}
             \end{center}
-        \end{figure}
+        \end{table}
 
 \subsection{System Output}
     Finally, the system outputs all the product model numbers in the database that have the $70$ or higher similarity in descending order. Since the OCR accuracy is not high enough, the system outputs any possible candidate of the product model number, and asks the user to choose one from them manually to improve the accuracy. In most cases, the first candidate is the correct one because it has the highest similarity. Figure~\ref{fig:result-sample} shows the output to the label photo in Figure~\ref{fig:camera}. Here, seven candidates for the product model number are displayed, and the first one is correct.
@@ -492,25 +492,8 @@ NEC Personal Products, Ltd. 0 2 0 85 6 -0 0
             
             Using the speed-up method can effectively reduce the time into the acceptable range while increasing the accuracy rate to be close to that of the conventional method. With this method, we can take a balance between searching speed and mistake prevention for OCR text, and successfully limit the search range into over one thousand (about $0.24\%$ of all data amount). In most cases the search result would come out in only less than $2$ seconds which is acceptable for users to wait.
             
-            As shown in figure \ref{fig:graph-time} and \ref{fig:graph-recognized}, our speed-up method for fuzzy search is proved to be effective.
-
-            \begin{figure}[t] 
-                \begin{center}
-                \includegraphics[width=0.48\textwidth]{figure/graph-time.pdf}
-                \end{center}
-                \caption{Search Time Comparation}
-                \label{fig:graph-time}
-            \end{figure}
-
-            \begin{figure}[t] 
-                \begin{center}
-                \includegraphics[width=0.48\textwidth]{figure/graph-recognized.pdf}
-                \end{center}
-                \caption{Search Time Comparation}
-                \label{fig:graph-recognized}
-            \end{figure}
-
-            
+            As shown from the result, our speed-up method for fuzzy search is proved to be effective.
+           
             It can be seen from table \ref{table:slowest_rec} that for few cases, after the limitation of character recognition, the search range is still large, thus it took longer than average time and not as fast as expected. The longest searching time of over $3$ seconds. This indicates that we can still do more to further improve this method.
                
      
