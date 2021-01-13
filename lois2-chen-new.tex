@@ -246,7 +246,7 @@ product identification, OCR, fuzzy search, regular expression, partial word matc
                 \label{fig:db-sample}
                 \begin{tabular}{l|l}
                     \Hline
-                    product\_name & model\_name \\
+                    product\_name & model\_number \\
                     \Hline
                     I-O DATA & EX-LD2071TB \\
                     CM 690 III & CMS-693-KKN1-JP \\
@@ -262,6 +262,12 @@ product identification, OCR, fuzzy search, regular expression, partial word matc
                     ThinkCentre & M900 Small \\
                     dynabook & PT45UWP-SWA \\
                     Smart-UPS 750 & SUA750JB \\
+                    dynabook & AZ25/CW \\
+                    dynabook Celeron HD & AZ25/B \\
+                    dynabook & AZ25/CB \\
+                    dynabook Celeron & AZ25/DR \\
+                    dynabook Celeron & AZ25/DW  \\
+                    HP EliteBook 830 G6 & 8AZ25PA\#ABJ \\
                     PageWide XL & XL 8000 \\                  
                     \Hline
                 \end{tabular}
@@ -302,7 +308,7 @@ Matched Model:
     \subsection{Half Divided String}
         As the part of the candidate string, we use the first half and the second half of it. Thus, after the procedure of {\em Candidate Extraction by Regular Expression}, we divide each extracted candidate alphanumeric string into two halves at the center of the string.
 
-    \subsection{Partial Word Matching} -> I cannot understand????
+    \subsection{Partial Word Matching}
 
         It has been observed that in most cases of the OCR errors, the number of incorrectly recognized characters does not exceed one.
 
@@ -310,7 +316,7 @@ Matched Model:
 
         In this way, for example, if the misrecognized character is in the second half, the first half is a correct recognition. Partial matching can ensure that the completely matched correct model from the master database is included in the matching result. Conversely, if the misrecognized character is in the first half, partial matching can also help us to match the correct model.
         
-        Let the original label text be “MX1234567” and the OCR result be “MX12345b7”, with one error. As shown in table \ref{table:half_matching}, it is divided into “MX123” and “45b7”. The matching result will contain the correct “MX1234567” model and together with some other models sharing the same half with less similarity, then output all of them into the result list.
+        Let the original label text be “AZ25/CB” and the OCR result be “AZ25/C8”, with one error. As shown in table \ref{table:half_matching}, it is divided into “AZ25” and “/C8”. The matching result will contain the correct “AZ25/CB” model and together with some other models sharing the same half with less similarity, then output all of them into the result list.
 
         \begin{table}[tb]
             \caption{Half divided string and its matching results}
@@ -318,13 +324,13 @@ Matched Model:
             \begin{center}
                 \begin{tabular}{c|c|c}
                 \Hline
-                origional label text & \multicolumn{2}{c}{MX1234567} \\ 
+                origional label text & \multicolumn{2}{c}{AZ25/CB} \\ 
                 \hline
-                OCR result & \multicolumn{2}{c}{MX12345{\em b}7} \\ 
+                OCR result & \multicolumn{2}{c}{AZ25/C{\em 8}} \\ 
                 \hline
-                half divided strings & \_\_MX123\_\_ & \_\_45{\em b}7\_\_ \\
+                half divided strings & \_\_AZ25\_\_ & \_\_/C{\em 8}\_\_ \\
                 \hline
-                matching results & \begin{tabular}{c}MX123\underline{4567}\\MX123\underline{5678}\\\underline{P}MX123\underline{5678}\\...\end{tabular} & (no result)) \\
+                matching results & \begin{tabular}{c}AZ25\underline{/CB}\\AZ25\underline{/B}\\AZ25\underline{/CW}\\\underline{8}AZ25\underline{PA\#ABJ}\\...\end{tabular} & (no result) \\
                 \Hline
                 \end{tabular}
             \end{center}
@@ -335,7 +341,7 @@ Matched Model:
 \label{sec:evaluation}
     In this section, we evaluate the proposed system. For evaluations, we collected 396 phots of different products using the system
 
-    \subsection{Regular Expression Used for Matching}
+    \subsection{Candidates Exported by Regular Expression}
 
         \begin{figure}[t] 
             \begin{center}
