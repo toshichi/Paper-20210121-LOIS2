@@ -339,7 +339,7 @@ Matched Model:
 %+++++++++++++++++++++++++++++++++++++++++++++++
 \section{Evaluation}
 \label{sec:evaluation}
-    In this section, we evaluate the proposed system. For evaluations, we collected 396 phots of different products using the system
+    In this section, we evaluate the proposed system. For evaluations, we collected 396 photos of different products using the system.
 
     \subsection{Strings Extracted by Regular Expression}
 
@@ -377,127 +377,140 @@ NEC Personal Products, Ltd. 0 2 0 85 6 -0 0
 
         As shown in figure \ref{fig:result-regex}, we use a tool called regex101\cite{regex101}, to test our regular expression described in section \ref{sec:regex} with some text extracted by OCR of a label photo shown in Figure~\ref{fig:label-regex-samp}. The red strings are the alphanumeric strings matched, and will be exported as candidates. We can see that the correct model {\em ADP-60NH} is among the matched part. Although the same string is matched multiple times, we will remove the duplicate ones.
 
-    \subsection{Result}
+    \subsection{Regular Expression Matching Rate}
+    \label{sec:regex-result}
+
+        We then used the regular expression on the OCR texts from all the $396$ photos.
+
+        \begin{table*}[t]
+            \caption{Regular expression matching result}
+            \label{table:regex_result}
+            \begin{center}
+                \begin{tabular}{c|cccc}
+                \Hline
+                    Extraction result & \begin{tabular}{c}Model extracted \\ exactly correct\end{tabular} & \begin{tabular}{c}Model extracted \\ partially correct\end{tabular} & \begin{tabular}{c}Model \\ not extracted\end{tabular} & Total \\ 
+                \hline
+                Count & 311 & 78 & 7 & 396 \\
+                Percentage (\%) & 78.5 & 19.7 & 1.8 & 100.0 \\
+                Average count of strings extracted for one item & 8.39 & 10.13 & 3.86 & 8.65 \\ 
+                % \hline
+                Maximum count of strings extracted for one item & 38 & 23 & 8 & 38 \\ 
+                % \hline
+                Mininum count of strings extracted for one item & 1 & 1 & 2 & 1 \\ 
+                \Hline
+                \end{tabular}
+            \end{center}
+        \end{table*}
+
+        As shown in table \ref{table:regex_result}, among all the $396$ tests, in $311$ cases the alphanumeric string containing correct model is successfully extracted by our regular expression. The correct extracting rate is about $78.5\%$.
+        
+        In $19.7\%$ cases, the extracted strings are partially correct, with slightly errors caused by OCR. In these cases, the OCR error could be tolerated by later fuzzy search.
+        
+        There are still $1.8\%$ cases in which our regular expression failed to match the correct model. These cases are mostly caused by too-short model numbers.
+        
+        The average amount of strings extracted for one item is $8.65$. All these results will be used as keywords in later fuzzy search. The minimum amount of strings extracted for one item is $1$, while the maximum is $38$.
+
+
+
+    \subsection{Speed-up Method for Fuzzy Search Process}
             
-        We conducted 396 searches in a master database with 553,887 records.
+        Using the $389$ correct results from the regular expression, we conducted fuzzy search in a master database with $553887$ records using both the naïve method and the speed-up method. The results are shown in table~\ref{table:methods_compare}.
 
-        \subsubsection{Regular Expression Matching Rate}
-        \label{sec:regex-result}
+        \begin{table*}[t]
+            \caption{Performance result using different searching methods}
+            \label{table:methods_compare}
+            \begin{center}
+                \begin{tabular}{l|ccc|ccc}
+                \Hline
+                Searching method &
+                    \multicolumn{3}{c}{Naïve method} &
+                    \multicolumn{3}{c}{Speed-up method} \\ 
+                \hline
+                Regular expression result &
+                    Exact match & Partial match & Total & 
+                    Exact match & Partial match & Total \\ 
+                \hline
+                Total count &
+                    311 & 78 & 389 &
+                    311 & 78 & 389 \\
+                Max similarity score in candidates &
+                    100 & 100 & 100 &
+                    100 & 100 & 100 \\ 
+                Correct model is max score candidate &
+                    307 & 33 & 340 &
+                    307 & 32 & 339 \\ 
+                Correct model in other candidates &
+                    4 & 23 & 27 &
+                    4 & 23 & 27 \\ 
+                Correct model not in candidates &
+                    0 & 22 & 22 &
+                    0 & 23 & 23 \\ 
+                Recognition rate (\%) &
+                    100.0 & 71.8 & 94.3 &
+                    100.0 & 70.5 & 94.1 \\ 
+                Average candidate count &
+                    14.56 & 14.79 & 14.60 &
+                    12.64 & 12.58 & 12.63 \\ 
+                Average search time (sec) &
+                    14.82 & 17.68 & 15.39 &
+                    0.98 & 1.03 & 0.99 \\ 
+                Mininum search time (sec) &
+                    2.04 & 2.07 & 2.04 &
+                    0.54 & 0.51 & 0.51 \\ 
+                Maximum search time (sec) &
+                    64.27 & 39.54 & 64.27 &
+                    3.00 & 2.51 & 3.00 \\ 
+                Average search range (DB record amount) &
+                    553887.00 & 553887.00 & 553887.00 &
+                    1208.27 & 1916.88 & 1350.36 \\
+                \Hline
+                \end{tabular}
+            \end{center}
+        \end{table*}
 
-            \begin{table*}[t]
-                \caption{Regular expression matching result}
-                \label{table:regex_result}
-                \begin{center}
-                    \begin{tabular}{c|c|c|c|c}
-                    \Hline
-                     & \begin{tabular}{c}Model extracted \\ exactly correct\end{tabular} & \begin{tabular}{c}Model extracted \\ partially correct\end{tabular} & \begin{tabular}{c}Model not extracted\end{tabular} & Total \\ 
-                    \hline
-                    Count & 311 & 78 & 7 & 396 \\
-                    Percentage (\%) & 78.5 & 19.7 & 1.8 & 100.0 \\
-                    Average count of strings extracted for one item & 8.39 & 10.13 & 3.86 & 8.65 \\ 
-                    % \hline
-                    Maximum count of strings extracted for one item & 38 & 23 & 8 & 38 \\ 
-                    % \hline
-                    Mininum count of strings extracted for one item & 1 & 1 & 2 & 1 \\ 
-                    \Hline
-                    \end{tabular}
-                \end{center}
-            \end{table*}
+        Using naïve method, there are $340$ cases in which the candidate with the high similarity score is the correct one. In these cases users do not need to choose the correct candidate. There are $14.60$ candidates on average for one search. In $94.3\%$ cases the correct models are among the candidates. The average searching time for each item is $15.39sec$, while the maximum is $64.27sec$. As for each item we look up all the records in master DB, the average search range is the amount of records in DB: $553887$.
+        
+        Using speed-up method, there are $339$ cases in which the candidate with the high similarity score is the correct one. There are $12.63$ candidates on average for one search. In $94.1\%$ cases the correct models are among the candidates, which is slightly lower than using naïve method. The average searching time for each item is $0.99sec$, while the maximum is $3.00sec$. The average search range for each item is $1350.36$, which means the amount of DB record we looked up in fuzzy search.
 
-            As shown in table \ref{table:regex_result}, among all the $396$ tests, in $311$ cases the alphanumeric string containing correct model is successfully extracted by our regular expression. The correct extracting rate is about $78.5\%$.
-            
-            In $19.7\%$ cases, the extracted strings are partially correct, with slightly errors caused by OCR. In these cases, the OCR error could be tolerated by later fuzzy search.
-            
-            There are still $1.8\%$ cases in which our regular expression failed to match the correct model. These cases are mostly caused by too-short model numbers.
-            
-            The average amount of strings extracted for one item is $8.65$. All these results will be used as keywords in later fuzzy search. The minimum amount of strings extracted for one item is $1$, while the maximum is $38$.
+        We found that both methods behave well on searching with {\em exactly correct exported regular expression results}. For {\em partially correct exported regular expression results}, both methods successfully corretced over $70\%$ of misrecognized OCR texts.
 
-        \subsubsection{Speed-up Method for Fuzzy Search Process}
+        Using the speed-up method can effectively reduce the time into the acceptable range while increasing the accuracy rate to be close to that of the naïve method. With this method, we can take a balance between searching speed and mistake prevention for OCR text, and successfully limit the search range to about $0.24\%$ of all data amount. The search result would come out in less than $1sec$ on average, which is acceptable for users to wait.
+        
+        As shown from the result, our speed-up method for fuzzy search is proved to be effective.
 
-            The time consumed is shown in the table \ref{table:methods_compare}.
-    
-            \begin{table*}[t]
-                \caption{Performance result using different searching methods}
-                \label{table:methods_compare}
-                \begin{center}
-                    \begin{tabular}{c|cc}
-                    \Hline
-                    search method &
-                        \begin{tabular}{c} Conventional Method \end{tabular} &
-                        \begin{tabular}{c} Speed-up Method \end{tabular} \\ 
-                    \hline
-                    Recognized as the 1st candidate in matching list &
-                        340 & 339\\ 
-                    \hline
-                    Recognized in top 5 candidates in matching list &
-                        361 & 360\\ 
-                    \hline
-                    Recognition Rate &
-                        91.16\% & 90.91\%\\ 
-                    \hline
-                    Average Search Time &
-                        15.241s & 0.984s \\ 
-                    \hline
-                    Median Search Time &
-                        12.470s & 0.910s \\ 
-                    \hline
-                    Maximum Search Time &
-                        64.273s & 3.004s \\ 
-                    \hline
-                    Average Search Range (DB Record Amount) &
-                        553,887.00 & 1,347.68 \\
-                    \Hline
-                    \end{tabular}
-                \end{center}
-            \end{table*}
-
-        \subsubsection{Analyse}
-
-            Using conventional method, there are $340$ cases in which the first candidate in result list is the correct one. In $361$ cases the correct models are among the top $5$ candidates. If we consider matched in the top $5$ candidates as successful recognition, the recognition rate is $91.16\%$. The average searching time for each item is $15.241sec$, median is $12.470sec$, while the maximum is $64.273sec$. As for each item we look up all the records in master DB, the average search range is the amount of records in DB: $553887$.
-            
-            Using speed-up method, there are $339$ cases in which the first candidate in result list is the correct one. In $360$ cases the correct models are among the top $5$ candidates. If we consider matched in the top $5$ candidates as successful recognition, the recognition rate is $90.91\%$. The average searching time for each item is $0.984sec$, median is $0.910sec$, while the maximum is $3.004sec$. The average search range for each item is $1347.68$, which means the amount of DB record we looked up in fuzzy search.
-
-            \begin{table*}[t]
-                \caption{Performance result using different searching methods}
-                \label{table:slowest_rec}
-                \begin{center}
-                    \begin{tabular}{c|c|c|c|c|c|c|c}
-                    \Hline
-                        \begin{tabular}{c}Real \\Model\end{tabular} &
-                        \begin{tabular}{c}Reuglar\\Expression\\Matching Results\end{tabular} &
-                        \begin{tabular}{c}Reuglar\\Expression\\Matching Correct\end{tabular} &
-                        \begin{tabular}{c}Partial Word\\Matching\\Costed Time (s)\end{tabular} &
-                        \begin{tabular}{c}Fuzzy Search\\Total Costed\\Time (s)\end{tabular} &
-                        \begin{tabular}{c}Fuzzy Search\\Range (DB\\Record Amount)\end{tabular} &
-                        \begin{tabular}{c}Fuzzy\\Search\\1st matched\end{tabular} &
-                        \begin{tabular}{c}Fuzzy Search\\top 5\\matched\end{tabular} \\ 
-                    \Hline
-                    DC35 & 14 & False & 0.26997 & 1.80353 & 24675 & False & False \\ 
-                    \hline
-                    DM-E25AW & 29 & True & 0.35329 & 2.41260 & 2912 & True & True \\ 
-                    \hline
-                    TPC-F026-SF & 23 & False & 0.33008 & 2.51139 & 6761 & True & True \\ 
-                    \hline
-                    K04A-WH & 38 & True & 0.46103 & 2.53164 & 5009 & True & True \\ 
-                    \hline
-                    MRO-GS8 & 22 & True & 0.31031 & 2.91033 & 3822 & True & True \\ 
-                    \hline
-                    NE-BS805-K & 33 & True & 0.40080 & 3.00420 & 5574 & True & True \\ 
-                    \Hline
-                    \end{tabular}
-                \end{center}
-            \end{table*}
-
-            Among the Fuzzy Search limited by partial word matching results, the several experiments in which the time-consuming is significantly higher than the average time-consuming are as in the table \ref{table:slowest_rec}. We can see the time costed is up to $3.004sec$, with searching ranges of up to $24675$ records.
-
-            
-            Using the speed-up method can effectively reduce the time into the acceptable range while increasing the accuracy rate to be close to that of the conventional method. With this method, we can take a balance between searching speed and mistake prevention for OCR text, and successfully limit the search range into over one thousand (about $0.24\%$ of all data amount). In most cases the search result would come out in only less than $2$ seconds which is acceptable for users to wait.
-            
-            As shown from the result, our speed-up method for fuzzy search is proved to be effective.
-           
-            It can be seen from table \ref{table:slowest_rec} that for few cases, after the limitation of character recognition, the search range is still large, thus it took longer than average time and not as fast as expected. The longest searching time of over $3$ seconds. This indicates that we can still do more to further improve this method.
+        
+        \begin{table*}[t]
+            \caption{Some slow searching using speed-up method}
+            \label{table:slowest_rec}
+            \begin{center}
+                \begin{tabular}{c|c|c|c|c|c|c}
+                \Hline
+                    Model &
+                    \begin{tabular}{c}Reuglar\\expression\\matching results\end{tabular} &
+                    \begin{tabular}{c}Search\\time (s)\end{tabular} &
+                    \begin{tabular}{c}Search range\\(DB record\\amount)\end{tabular} &
+                    \begin{tabular}{c}Correct model\\is max score\\ candidate\end{tabular} &
+                    \begin{tabular}{c}Correct model\\in other\\candidates\end{tabular} &
+                    \begin{tabular}{c}Max similarity\\score in\\candidates\end{tabular} \\ 
+                \Hline
+                DC35 & 14 & 1.80353 & 24675 & False & False & 89 \\ 
+                \hline
+                DM-E25AW & 29 & 2.41260 & 2912 & True & True & 100 \\ 
+                \hline
+                TPC-F026-SF & 23 & 2.51139 & 6761 & True & True & 91 \\ 
+                \hline
+                K04A-WH & 38 & 2.53164 & 5009 & True & True & 100 \\ 
+                \hline
+                MRO-GS8 & 22 & 2.91033 & 3822 & True & True & 100 \\ 
+                \hline
+                NE-BS805-K & 33 & 3.00420 & 5574 & True & True & 100 \\ 
+                \Hline
+                \end{tabular}
+            \end{center}
+        \end{table*}
+      
+        It can be seen from table~\ref{table:slowest_rec} that for few cases, even by using speed-up method, the search range can still be large, thus it took longer than average time and not as fast as expected. The longest searching time of over $3$ seconds. This indicates that we can still do more to further improve the speed.
                
-     
 %+++++++++++++++++++++++++++++++++++++++++++++++
 \section{Conclusion}
 \label{sec:conclusion}
