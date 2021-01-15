@@ -153,14 +153,14 @@ product identification, OCR, fuzzy search, regular expression, partial word matc
 80      \end{lstlisting}
 
     \subsection{Information on Product Label}
-        The proposed system identifies the product using the information on the product label. As shown in Figure~\ref{fig:label-exp}, the label usually displays the company name, the product name, the product model number, and the production slot number. Among them, the {\em product model number} is used to identify the product in our system, because it is usually uniquely assigned to each product regardless of different companies. Therefore, the accurate recognition of the {\em product model number} becomes the goal of this study.
+        The proposed system identifies the product using the information on the product label. As shown in Figure~\ref{fig:label-regex-samp}, the label usually indicates the company name, the product name, the product model number, and the production slot number. Among them, the {\em product model number} is used to identify the product in our system, because it is usually uniquely assigned to each product regardless of different companies. Therefore, the accurate recognition of the {\em product model number} becomes the goal of this study.
 
         \begin{figure}[t] 
             \begin{center}
-            \includegraphics[width=0.48\textwidth]{figure/label-exp.png}
+            \includegraphics[width=0.48\textwidth]{figure/label-regex-samp.png}
             \end{center}
-            \caption{Example product label photo.}
-            \label{fig:label-exp}
+            \caption{Product label photo.}
+            \label{fig:label-regex-samp}
         \end{figure}
 
 
@@ -199,7 +199,7 @@ product identification, OCR, fuzzy search, regular expression, partial word matc
 
         \begin{figure}[t] 
             \begin{center}
-            \includegraphics[width=0.48\textwidth]{figure/homepage.png}
+            \includegraphics[width=0.35\textwidth]{figure/homepage.png}
             \end{center}
             \caption{Web page for taking photo by smartphone.}
             \label{fig:homepage}
@@ -207,7 +207,7 @@ product identification, OCR, fuzzy search, regular expression, partial word matc
 
         \begin{figure}[t] 
             \begin{center}
-            \includegraphics[width=0.35\textwidth]{figure/camera.png}
+            \includegraphics[width=0.30\textwidth]{figure/camera.png}
             \end{center}
             \caption{Smartphone interface after taking photo.}
             \label{fig:camera}
@@ -220,7 +220,7 @@ product identification, OCR, fuzzy search, regular expression, partial word matc
 
     \subsection{Candidate Extraction by Regular Expression}
     \label{sec:regex}
-        First, the following regular expression is applied to the recognized characters by the OCR software, to filter and extract all the alphanumeric strings from them as the candidates to the {\em product model number}:
+        First, the following {\em regular expression} is applied to the recognized characters by the OCR software, to filter and extract all the alphanumeric strings from them as the candidates to the {\em product model number}:
 
             \begin{center}
             \begin{BVerbatim}
@@ -234,6 +234,37 @@ product identification, OCR, fuzzy search, regular expression, partial word matc
         However, it does not actually pick any string, so that the string may contain a number at the middle rather than at the end. Thus, the following {\em [a-zA-Z0-9$\backslash$-$\backslash$/$\backslash$($\backslash$)]\{4,\})} is the one that actually picks a string that has more than four characters as the length, containing letters, numbers, brackets, hyphen, or slashes, without any space. In other words, the alphanumeric string for the candidate of the {\em product model number} must have more than four characters in the length, by containing letters, numbers, brackets, hyphen, or slashes only.
 
         At the last of the regular expression, {\em [ ,.]*} is used to exclude any possible following space, comma, or dot after the alphanumeric string, and make sure the string ends at the correct position.
+
+In our implementation, we adopt the {\em regex101} tool \cite{regex101} to apply the regular expression to the recognized characters by the OCR software. Sometimes, the same candidates are extracted because the label can show them several times. To reduce the search time, the duplicated candidates are removed after the extractions.
+
+
+    \subsection{Example Candidate Extraction}
+
+        \begin{figure}[t] 
+            \begin{center}
+                \begin{BVerbatim}[commandchars=\\\{\}]
+NEC
+AC ADAPTOR \textcolor{red}{ADP64}
+\textcolor{red}{PC-VP-WP36-01/OP-520-75601-01}
+\textcolor{red}{ANEC-Y7097Y} N)(S) (D) (FI
+D FI
+KETI \textcolor{red}{HU10104-2008}
+INPUT: AC \textcolor{red}{100-240V 50-60} Hz \textcolor{red}{130-195VA}
+OUTPUT: DC 19V 3.16A
+S/N(IF ): \textcolor{red}{7919595DA}
+MODEL ( O:\textcolor{red}{ADP-60NH}
+INPUT (A)(MA):100-\textcolor{red}{240V}~ 1.5A \textcolor{red}{50-60HZ} S
+OUTPUT()():19V==3.16A ODO
+\textcolor{red}{ADP-60NH}
+MARK
+NEC Personal Products, Ltd. 0 2 0 85 6 -0 0
+                \end{BVerbatim}
+            \end{center}
+            \caption{Example of candidate extraction results by regular expression.}
+            \label{fig:result-regex}
+        \end{figure}
+
+        Figure~\ref{fig:result-regex} shows the candidate extraction results by applying the regular expression to the recognized characters by the OCR software for the label photo in Figure~\ref{fig:label-regex-samp}. Here, the candidates are marked by red, where the correct model number {\em ADP-60NH} is included. {\em ADP-60NH} is extracted twice. To reduce the search time, the duplicated candidates are removed.
 
         
     \subsection{Similarity Calculation}
@@ -292,7 +323,7 @@ Matched Model:
 }
                 \end{BVerbatim}
             \end{center}
-            \caption{Sample result list of the system}
+            \caption{Example system output.}
             \label{fig:result-sample}
         \end{figure}
 
@@ -300,37 +331,34 @@ Matched Model:
 %+++++++++++++++++++++++++++++++++++++++++++++++
 \section{Proposal of Speedup Method for Fuzzy Search}
 \label{sec:speedup}
-    In this section, we present the speedup method for the fuzzy search using the partial word matching to avoid the long response time of the system.
+    In this section, we present the speedup method for the fuzzy search in the system by limiting the records of product model numbers for the similarity calculation.
 
-    \subsection{Overview}
-        In the naïve logic, the most time-consuming procedure is the {\em similarity calculation} using {\em FuzzyWuzzy}, since the similarity between the candidate strings from the OCR software and all the records in database have to be calculated. For the speedup, we limit the records in the database for the similarity calculations. Here we select every record whose part is exactly matching with part of the divided candidate string, and calculate the similarity against the selected record only.
+    \subsection{Idea of Record Limitation}
+        In the naïve logic, the most time-consuming procedure is the {\em similarity calculation} using {\em FuzzyWuzzy}, since the similarity between the candidate strings extracted from the OCR software output and all the records in the database have to be calculated. For the speedup, we limit the number of records in the database for the similarity calculations. Actually, before the similarity calculations, any record that has the same part as the specified part of each candidate string. Then, the similarity is calculated against the selected record only.
 
-    \subsection{Half Divided String}
-        As the part of the candidate string, we use the first half and the second half of it. Thus, after the procedure of {\em Candidate Extraction by Regular Expression}, we divide each extracted candidate alphanumeric string into two halves at the center of the string.
+    \subsection{Specified String Part}
+        In this study, for the specified candidate string part, the first half and the second half of the string are considered. It has been observed that in most cases of the OCR recognition results, the number of incorrectly recognized characters does not exceed one. 
+Thus, either of the two half strings have the correct characters of the target product model number with the high probabilities. In our implementation, each extracted candidate string is divided into two halves at the center of the string, and each half string is used in the following partial word matching.
 
     \subsection{Partial Word Matching}
+For each half candidate string, the partial word matching is applied against every record of the product model number in the database. Table~\ref{table:half_matching} shows one example of this procedure. Here, the correct product model number is “AZ25/CB”, but the extracted candidate string by the regular expression from the OCR software output is “AZ25/C8”, which has one error of “8” instead of “B”. Then, this candidate string is divided into two halves, “AZ25” and “/C8”. 
 
-        It has been observed that in most cases of the OCR errors, the number of incorrectly recognized characters does not exceed one.
-
-        Thus we divide one alphanumeric string into two halves. For each half, partial matching is performed against every record in the database. Like in table \ref{table:half_matching}. We use partial matching rather than forward or backward matching so that we can avoid OCR text missing.
-
-        In this way, for example, if the misrecognized character is in the second half, the first half is a correct recognition. Partial matching can ensure that the completely matched correct model from the master database is included in the matching result. Conversely, if the misrecognized character is in the first half, partial matching can also help us to match the correct model.
-        
-        Let the original label text be “AZ25/CB” and the OCR result be “AZ25/C8”, with one error. As shown in table \ref{table:half_matching}, it is divided into “AZ25” and “/C8”. The matching result will contain the correct “AZ25/CB” model and together with some other models sharing the same half with less similarity, then output all of them into the result list.
+After that, each half string is used in the partial word matching with every record in the database. Then, “AZ25” finds the four records including the correct one, and “/C8” does no record. The similarity calculations are applied against only these four records, which can drastically reduce the number of matching records and speed up the similarity calculations.
 
         \begin{table}[tb]
-            \caption{Half divided string and its matching results}
+            \caption{Example of record limitation.}
             \label{table:half_matching}
             \begin{center}
                 \begin{tabular}{c|c|c}
                 \Hline
-                origional label text & \multicolumn{2}{c}{AZ25/CB} \\ 
+                product model number & \multicolumn{2}{c}{AZ25/CB} \\ 
                 \hline
-                OCR result & \multicolumn{2}{c}{AZ25/C{\em 8}} \\ 
+                extracted candidate string & \multicolumn{2}{c}{AZ25/C{\em 8}} \\ 
                 \hline
-                half divided strings & \_\_AZ25\_\_ & \_\_/C{\em 8}\_\_ \\
+                half strings & \_\_AZ25\_\_ & \_\_/C{\em 8}\_\_ \\
                 \hline
-                matching results & \begin{tabular}{c}AZ25\underline{/CB}\\AZ25\underline{/B}\\AZ25\underline{/CW}\\\underline{8}AZ25\underline{PA\#ABJ}\\...\end{tabular} & (no result) \\
+                matching records & \begin{tabular}{c}AZ25\underline{/CB}\\AZ25\underline{/B}\\AZ25\underline{/CW}\\\underline{8}AZ25\underline{PA\#ABJ}
+\end{tabular} & (no result) \\
                 \Hline
                 \end{tabular}
             \end{center}
@@ -339,227 +367,180 @@ Matched Model:
 %+++++++++++++++++++++++++++++++++++++++++++++++
 \section{Evaluation}
 \label{sec:evaluation}
-    In this section, we evaluate the proposed system. For evaluations, we collected 396 photos of different products using the system.
+    In this section, we evaluate the proposal in this study. For evaluations, we collect 396 label photos of different products using the system.
 
-    \subsection{Strings Extracted by Regular Expression}
-
-        \begin{figure}[t] 
-            \begin{center}
-            \includegraphics[width=0.48\textwidth]{figure/label-regex-samp.png}
-            \end{center}
-            \caption{Product label photo used to test regular expression.}
-            \label{fig:label-regex-samp}
-        \end{figure}
-
-        \begin{figure}[t] 
-            \begin{center}
-                \begin{BVerbatim}[commandchars=\\\{\}]
-NEC
-AC ADAPTOR \textcolor{red}{ADP64}
-\textcolor{red}{PC-VP-WP36-01/OP-520-75601-01}
-\textcolor{red}{ANEC-Y7097Y} N)(S) (D) (FI
-D FI
-KETI \textcolor{red}{HU10104-2008}
-INPUT: AC \textcolor{red}{100-240V 50-60} Hz \textcolor{red}{130-195VA}
-OUTPUT: DC 19V 3.16A
-S/N(IF ): \textcolor{red}{7919595DA}
-MODEL ( O:\textcolor{red}{ADP-60NH}
-INPUT (A)(MA):100-\textcolor{red}{240V}~ 1.5A \textcolor{red}{50-60HZ} S
-OUTPUT()():19V==3.16A ODO
-\textcolor{red}{ADP-60NH}
-MARK
-NEC Personal Products, Ltd. 0 2 0 85 6 -0 0
-                \end{BVerbatim}
-            \end{center}
-            \caption{An example of regular expression matching result}
-            \label{fig:result-regex}
-        \end{figure}
-
-        As shown in figure \ref{fig:result-regex}, we use a tool called regex101\cite{regex101}, to test our regular expression described in section \ref{sec:regex} with some text extracted by OCR of a label photo shown in Figure~\ref{fig:label-regex-samp}. The red strings are the alphanumeric strings matched, and will be exported as candidates. We can see that the correct model {\em ADP-60NH} is among the matched part. Although the same string is matched multiple times, we will remove the duplicate ones.
-
-    \subsection{Regular Expression Matching Rate}
+    \subsection{Evaluation of Candidate String Extraction}
     \label{sec:regex-result}
-
-        We then used the regular expression on the OCR texts from all the $396$ photos.
+First, we evaluate the candidate string extraction accuracy by our proposal. 
+Table~\ref{table:regex_result} shows the summary of candidate string extraction results for the $396$ product label photos by the proposal. In this table, the {\em fully correct number} indicates the results for the label photos such that the output of the proposal includes the fully correct product model number that has no error. The {\em partially correct number} indicates the results such that the output includes the partially correct number that has some different characters from the correct one. The {\em no correct number} indicates the results such that the output does not include even the partially correct number.
 
         \begin{table*}[t]
-            \caption{Regular expression matching result}
+            \caption{Candidate string extraction results.}
             \label{table:regex_result}
             \begin{center}
                 \begin{tabular}{c|cccc}
                 \Hline
-                    Extraction result & \begin{tabular}{c}Model extracted \\ exactly correct\end{tabular} & \begin{tabular}{c}Model extracted \\ partially correct\end{tabular} & \begin{tabular}{c}Model \\ not extracted\end{tabular} & Total \\ 
+                    item & \begin{tabular}{c}fully correct\\ number\end{tabular} & \begin{tabular}{c}partially correct\\ number \end{tabular} & \begin{tabular}{c}no correct\\ number \end{tabular} & total \\ 
                 \hline
-                Count & 311 & 78 & 7 & 396 \\
-                Percentage (\%) & 78.5 & 19.7 & 1.8 & 100.0 \\
-                Average count of strings extracted for one item & 8.39 & 10.13 & 3.86 & 8.65 \\ 
+                number of photos & 311 & 78 & 7 & 396 \\
+                percentage (\%) & 78.5 & 19.7 & 1.8 & 100.0 \\
+                Average number of extracted candidates & 8.39 & 10.13 & 3.86 & 8.65 \\ 
                 % \hline
-                Maximum count of strings extracted for one item & 38 & 23 & 8 & 38 \\ 
+                Maximum number of extracted candidates & 38 & 23 & 8 & 38 \\ 
                 % \hline
-                Mininum count of strings extracted for one item & 1 & 1 & 2 & 1 \\ 
+                Minimum number of extracted candidates & 1 & 1 & 2 & 1 \\ 
                 \Hline
                 \end{tabular}
             \end{center}
         \end{table*}
 
-        As shown in table \ref{table:regex_result}, among all the $396$ tests, in $311$ cases the alphanumeric string containing correct model is successfully extracted by our regular expression. The correct extracting rate is about $78.5\%$.
+       Table~\ref{table:regex_result} suggests that the OCR software and the regular expression in the proposal can extract the fully correct records for the $311$ photos or $78.5\%$ among the $396$ photos, and the partially correct records for the $78$ photos or $19.7\%$. For them, the fuzzy search using the similarity calculations can detect the correct records in the database.
+
+However, it cannot extract even the partially correct records for the $7$ photos or $1.8\%$. In these photos, most of the product model numbers are very short. The improvements of the proposal for such numbers will be in future works.
         
-        In $19.7\%$ cases, the extracted strings are partially correct, with slightly errors caused by OCR. In these cases, the OCR error could be tolerated by later fuzzy search.
-        
-        There are still $1.8\%$ cases in which our regular expression failed to match the correct model. These cases are mostly caused by too-short model numbers.
-        
-        The average amount of strings extracted for one item is $8.65$. All these results will be used as keywords in later fuzzy search. The minimum amount of strings extracted for one item is $1$, while the maximum is $38$.
+The average number of extracted candidates from one photo is $8.65$. As this number increases, the record search time using the fuzzy search increases. Thus, the reduction of this number will also be in future works.
 
 
-
-    \subsection{Speed-up Method for Fuzzy Search Process}
-            
-        Using the $389$ correct results from the regular expression, we conducted fuzzy search in a master database with $553887$ records using both the naïve method and the speed-up method. The results are shown in table~\ref{table:methods_compare}.
+    \subsection{Evaluation of Number Recognition}
+           
+For the extracted candidates for the $389$ photos at {\em fully correct number} or at {\em partially correct number} in Table~\ref{table:regex_result}, the fuzzy search is conducted to the $553,887$ records in the database for the system. Here, both the naïve method and the speedup method are applied. Table~\ref{table:methods_compare} shows the summary of the product model number recognition results to the $396$ photos by the proposal. In this table,                {\em correct number with max. score} indicates the number of photos such that the model number in the output has the largest score. {\em correct number with other score} indicates the number of photos such that the model number in the output has the other score to the largest. {\em number of failed photos} indicates the number of photos such the model number does not appear in the output. 
 
         \begin{table*}[t]
-            \caption{Performance result using different searching methods}
+            \caption{Application results.}
             \label{table:methods_compare}
             \begin{center}
                 \begin{tabular}{l|ccc|ccc}
                 \Hline
-                Searching method &
-                    \multicolumn{3}{c}{Naïve method} &
-                    \multicolumn{3}{c}{Speed-up method} \\ 
+                search method &
+                    \multicolumn{3}{c|}{naïve method} &
+                    \multicolumn{3}{c}{speedup method} \\ 
                 \hline
                 Regular expression result &
-                    Exact match & Partial match & Total & 
-                    Exact match & Partial match & Total \\ 
+                    fully & partially & total & 
+                    fully & partially & total & 
                 \hline
-                Total count &
+                number of photos &
                     311 & 78 & 389 &
                     311 & 78 & 389 \\
-                Max similarity score in candidates &
+                maximum similarity score &
                     100 & 100 & 100 &
                     100 & 100 & 100 \\ 
-                Correct model is max score candidate &
+                correct number with max. score &
                     307 & 33 & 340 &
                     307 & 32 & 339 \\ 
-                Correct model in other candidates &
+                correct number with other score &
                     4 & 23 & 27 &
                     4 & 23 & 27 \\ 
-                Correct model not in candidates &
+                number of failed photos &
                     0 & 22 & 22 &
                     0 & 23 & 23 \\ 
-                Recognition rate (\%) &
+                recognition rate (\%) &
                     100.0 & 71.8 & 94.3 &
                     100.0 & 70.5 & 94.1 \\ 
-                Average candidate count &
+                average number of outputs &
                     14.56 & 14.79 & 14.60 &
                     12.64 & 12.58 & 12.63 \\ 
-                Average search time (sec) &
+                average search time (sec) &
                     14.82 & 17.68 & 15.39 &
                     0.98 & 1.03 & 0.99 \\ 
-                Mininum search time (sec) &
+                minimum search time (sec) &
                     2.04 & 2.07 & 2.04 &
                     0.54 & 0.51 & 0.51 \\ 
-                Maximum search time (sec) &
+                maximum search time (sec) &
                     64.27 & 39.54 & 64.27 &
                     3.00 & 2.51 & 3.00 \\ 
-                Average search range (DB record amount) &
-                    553887.00 & 553887.00 & 553887.00 &
-                    1208.27 & 1916.88 & 1350.36 \\
+                average number of cal. records &
+                    553,887.00 & 553,887.00 & 553,887.00 &
+                    1,208.27 & 1,916.88 & 1,350.36 \\
                 \Hline
                 \end{tabular}
             \end{center}
         \end{table*}
 
-        Using naïve method, there are $340$ cases in which the candidate with the high similarity score is the correct one. In these cases users do not need to choose the correct candidate. There are $14.60$ candidates on average for one search. In $94.3\%$ cases the correct models are among the candidates. The average searching time for each item is $15.39sec$, while the maximum is $64.27sec$. As for each item we look up all the records in master DB, the average search range is the amount of records in DB: $553887$.
+    \subsubsection{Naïve Method}
+The naïve method detects the correct number or database record for the $340$ photos with the highest score, where users do not need to choose the correct one from the multiple candidate numbers in the output. The rate for detecting the correct number among all the photos is $94.3\%$. For one photo, the average number of candidate numbers in the output is $14.6$. The average search time is $15.39sec$, and the maximum time is $64.27sec$, where the similarity is calculated against all of the $553,887$ records in the database.
         
-        Using speed-up method, there are $339$ cases in which the candidate with the high similarity score is the correct one. There are $12.63$ candidates on average for one search. In $94.1\%$ cases the correct models are among the candidates, which is slightly lower than using naïve method. The average searching time for each item is $0.99sec$, while the maximum is $3.00sec$. The average search range for each item is $1350.36$, which means the amount of DB record we looked up in fuzzy search.
+    \subsubsection{Speedup Method}
+The speedup method detects the correct number or database record for the $339$ photos with the highest score. The rate for detecting the correct number is $94.1\%$. For one photo, the average number of candidate numbers in the output is $12.63$. The average search time is $0.99sec$, and the maximum time is $3sec$, where the similarity is calculated against only the $1350.36$ records or $0.24\%$ of all the records in the database.
+The speedup method can effectively reduce the search time into the acceptable range while keeping the accuracy. 
 
-        We found that both methods behave well on searching with {\em exactly correct exported regular expression results}. For {\em partially correct exported regular expression results}, both methods successfully corretced over $70\%$ of misrecognized OCR texts.
-
-        Using the speed-up method can effectively reduce the time into the acceptable range while increasing the accuracy rate to be close to that of the naïve method. With this method, we can take a balance between searching speed and mistake prevention for OCR text, and successfully limit the search range to about $0.24\%$ of all data amount. The search result would come out in less than $1sec$ on average, which is acceptable for users to wait.
-        
-        As shown from the result, our speed-up method for fuzzy search is proved to be effective.
-
+     \subsubsection{Slow Photos}
+Table~\ref{table:slowest_rec} shows the slow search results for six photos where even the speedup method takes rather long time. The reason is that the number of extracted candidate strings by the regular expression is large compared with the others. The reduction of them will be in future works for further speedup of the system.        
         
         \begin{table*}[t]
-            \caption{Some slow searching using speed-up method}
+            \caption{Slow search results using speed-up method}
             \label{table:slowest_rec}
             \begin{center}
                 \begin{tabular}{c|c|c|c|c|c|c}
                 \Hline
-                    Model &
-                    \begin{tabular}{c}Reuglar\\expression\\matching results\end{tabular} &
-                    \begin{tabular}{c}Search\\time (s)\end{tabular} &
-                    \begin{tabular}{c}Search range\\(DB record\\amount)\end{tabular} &
-                    \begin{tabular}{c}Correct model\\is max score\\ candidate\end{tabular} &
-                    \begin{tabular}{c}Correct model\\in other\\candidates\end{tabular} &
-                    \begin{tabular}{c}Max similarity\\score in\\candidates\end{tabular} \\ 
+                    \begin{tabular}{c}product\\model\\number\end{tabular} &
+                    \begin{tabular}{c}number of\\extracted\\candidates\end{tabular} &
+                    \begin{tabular}{c}search\\time (s)\end{tabular} &
+                    \begin{tabular}{c}number of\\search\\records\end{tabular} &
+                    \begin{tabular}{c}maximum\\score\\output\end{tabular} &
+                    \begin{tabular}{c}any\\score\\output\end{tabular} &
+                    \begin{tabular}{c}maximum\\similarity\\score\end{tabular} \\ 
                 \Hline
-                DC35 & 14 & 1.80353 & 24675 & False & False & 89 \\ 
+                DC35 & 14 & 1.80353 & 24,675 & incorrect & incorrect & 89 \\ 
                 \hline
-                DM-E25AW & 29 & 2.41260 & 2912 & True & True & 100 \\ 
+                DM-E25AW & 29 & 2.41260 & 2,912 & correct & correct & 100 \\ 
                 \hline
-                TPC-F026-SF & 23 & 2.51139 & 6761 & True & True & 91 \\ 
+                TPC-F026-SF & 23 & 2.51139 & 6,761 & correct & correct & 91 \\ 
                 \hline
-                K04A-WH & 38 & 2.53164 & 5009 & True & True & 100 \\ 
+                K04A-WH & 38 & 2.53164 & 5,009 & correct & correct & 100 \\ 
                 \hline
-                MRO-GS8 & 22 & 2.91033 & 3822 & True & True & 100 \\ 
+                MRO-GS8 & 22 & 2.91033 & 3,822 & correct & correct & 100 \\ 
                 \hline
-                NE-BS805-K & 33 & 3.00420 & 5574 & True & True & 100 \\ 
+                NE-BS805-K & 33 & 3.00420 & 5574 & correct & correct & 100 \\ 
                 \Hline
                 \end{tabular}
             \end{center}
         \end{table*}
       
-        It can be seen from table~\ref{table:slowest_rec} that for few cases, even by using speed-up method, the search range can still be large, thus it took longer than average time and not as fast as expected. The longest searching time of over $3$ seconds. This indicates that we can still do more to further improve the speed.
                
 %+++++++++++++++++++++++++++++++++++++++++++++++
 \section{Conclusion}
 \label{sec:conclusion}
-    In this section, we conclude this study with future works.
-
-    In this study, we proposed the {\em product identification system} using OCR of the label photo by a smart phone. The {\em fuzzy search} is adopted with the speedup method to improve the accuracy by finding the best-matching record in the database. The application results to $396$ label photos showed the effectiveness of the proposal. In future works, we will improve the user interface and further investigate the performance of the proposal with various product label photos.
-
-    As mentioned in section~\ref{sec:regex-result}, all the extracted strings by the regular expression are used as keywords in fuzzy search. But we can find out that in most cases the model number is exactly exported by the regular expression, and do not need futher correction or be tolerated by fuzzy search. So in the future, after doing partial matching for both halves of exported strings, we can compare the results between them. If one model number is matched by both halves, that means the string could be exactly the model number, and can be outputed as the result, no more similarity calculation is needed. This may make the whole process even more faster.
-            
-    We consider that, for each record in the master database, we can add not only the model text information of the product, but also its brand or manufacturer information. Before doing fuzzy search, we can also use other recognition methods to match and analyze the text contained in the OCR results to determine the brand of the product, and use brand information matching to further limit the search range of fuzzy search for model texts, which may further improve searching performance.
-
-    Also, for the result of regular expression shown in figure \ref{fig:result-regex}, we can see some alphanumeric strings unrelated with model also got matched. In future studies we need to find better patterns for regular expression to reduce unnecessary fuzzy searching.
-
-    As our output is a list of most possible models in the product label, it is possible that there are several similar models with the same matching rate. How to correctly pick out the correct one is still to be studied.
-
+%summary
+    In this study, we proposed the {\em product identification system} using the {\em optical character recognition (OCR)} software to the label photo taken by a smart phone. The {\em fuzzy search} is adopted with the speedup method to improve the accuracy by finding the best-matching record of the product model number in the database. The application results to $396$ product label photos showed the effectiveness of the proposal. 
+%future works
+In future works, we will study to improve the accuracy of the system particularly for labels that have short product model numbers, reduce the number of extracted candidate strings by the regular expression to further reduce the search time. We will also improve the user interface and further investigate the performance of the proposal with various product label photos.
 
 %+++++++++++++++++++++++++++++++++++++++++++++++
 %\bibliographystyle{sieicej}
 %\bibliography{myrefs}
 \begin{thebibliography}{99}% 文献数が10未満の時 {9}
     \bibitem{fuzzywuzzy-guidence}
-    T., B. (2020, November 14). \emph{FuzzyWuzzy: Fuzzy String Matching in Python, Beginner’s Guide.} Towards Data Science. \url{https://towardsdatascience.com/fuzzywuzzy-fuzzy-string-matching-in-python-beginners-guide-9adc0edf4b35}
+    “FuzzyWuzzy: Fuzzy string matching in Python, beginner’s guide,” Towards Data Science, 
+\url{https://towardsdatascience.com/fuzzywuzzy-fuzzy-string-matching-in-python-beginners-guide-9adc0edf4b35}.
 
     \bibitem{string-correction}
-    Wagner, R. A., \& Fischer, M. J. (1974). The String-to-String Correction Problem. \emph{Journal of the ACM, 21(1)}, 168–173. \url{https://doi.org/10.1145/321796.321811}
+    R. A. Wagner and M. J. Fischer, “The string-to-string correction problem,“ J. ACM, vol. 21, no. 1, pp. 168-173, 1974.
 
     \bibitem{guide-to-matching}
-    Navarro, G. (2001). A guided tour to approximate string matching. \emph{ACM Computing Surveys, 33(1)}, 31–88. \url{https://doi.org/10.1145/375360.375365}
+    G. Navarro, “A guided tour to approximate string matching, ACM Comput. Surv., vol. 33, no. 1, pp. 31–88, 2001.
 
     \bibitem{levenshtein}
-    Wikipedia contributors. (2020, December 15). \emph{Levenshtein distance.} Wikipedia. \url{https://en.wikipedia.org/wiki/Levenshtein_distance}
+    “Levenshtein distance,” Wikipedia,
+ \url{https://en.wikipedia.org/wiki/Levenshtein_distance}.
 
     \bibitem{fuzzywuzzy}
-    Cohen, A. (2011, July 8). \emph{FuzzyWuzzy: Fuzzy String Matching in Python.} ChairNerd. \url{https://chairnerd.seatgeek.com/fuzzywuzzy-fuzzy-string-matching-in-python/}
+“FuzzyWuzzy: Fuzzy string matching in Python,” ChairNerd, July 2011, \url{https://chairnerd.seatgeek.com/fuzzywuzzy-fuzzy-string-matching-in-python/}.
 
     \bibitem{fuzzywuzzy-git}
-    Seatgeek. (2020, February 14). \emph{FuzzyWuzzy.} GitHub. \url{https://github.com/seatgeek/fuzzywuzzy}
+    “FuzzyWuzzy,” GitHub, \url{https://github.com/seatgeek/fuzzywuzzy}.
 
     \bibitem{lookahead}
-    Goyvaerts, J. (2020, March 9). \emph{Positive and Negative Lookahead.} Regular-Expressions.info. \url{https://www.regular-expressions.info/lookaround.html}
+    J. Goyvaerts, “Positive and negative Lookahead,” Regular-Expressions.info., 2020, \emph{\url{https://www.regular-expressions.info/lookaround.html}
 
     \bibitem{lookahead-and-behind}
-    BoppreH, hwnd, Trzesniewski, L., Stribiżew, W., \& Ivanova, M.(n.d.). \emph{Regular Expressions - Lookahead and Lookbehind.} SO Documentation. Retrieved December 23, 2020, from \url{https://sodocumentation.net/regex/topic/639/lookahead-and-lookbehind}
+    “Regular expressions - lookahead and lookbehind,” SO Documentation, \url{https://sodocumentation.net/regex/topic/639/lookahead-and-lookbehind}.
 
     \bibitem{regex-tutorial}
-    RegexTutorial.org. (n.d.). \emph{Positive \& Negative Lookahead.} Regex Tutorial. Retrieved December 14, 2020, from \url{https://www.regextutorial.org/positive-and-negative-lookahead-assertions.php}
+    RegexTutorial, “Regex Lookahead,” \url{https://www.regextutorial.org/positive-and-negative-lookahead-assertions.php}.
 
     \bibitem{regex101}
-    Dib, F. (2017, March 31). \emph{Online regex tester and debugger.} Regex101. \url{https://regex101.com/}
+  regular expressions 101, Regex101, \url{https://regex101.com/}.
 
 \end{thebibliography}
 
