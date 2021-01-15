@@ -86,7 +86,7 @@ Otemachi 2-6-2, Chiyoda, Tokyo, 100-0004, Japan}
     %contribution
     In this study, we propose a {\em product identification system} applying OCR of the label photo taken by a smart phone. The {\em fuzzy search} is adopted to improve the accuracy by finding the best-matching record in the database for the possibly incorrect key by OCR. Since this search takes inadmissibly long time when the database has a lot of records, we also propose the speedup method by limiting the matching records. 
     %evaluation
-    For evaluations, we apply the proposal to $396$ label photos. The results show that the CPU time is $15.241sec$ by the naïve search, and $0.984sec$ by the speedup one that limits the number of matching records into $0.24\%$ of the naïve one, where the record hit rate is slightly reduced from $91.16\%$ to $90.91\%$.
+    For evaluations, we apply the proposal to $389$ label photos. The results show that the CPU time is $15.39sec$ by the naïve search, and $0.99sec$ by the speedup one that limits the number of records to be searched into $0.24\%$ of the naïve one, where the record hit rate is slightly reduced from $94.3\%$ to $94.1\%$.
 \end{eabstract}
 
 \begin{ekeyword}
@@ -109,7 +109,7 @@ product identification, OCR, fuzzy search, regular expression, partial word matc
     The speedup method limits the matching records with the key that contain a part of the characters in the key. In this paper, the alphanumeric string of the key is divided into two halves, and the records containing either of the half string are extracted from the database. After that, the {\em fuzzy search} is applied to the extracted records only instead of the whole records. 
 
     %evaluation
-    For evaluations, we collect $396$ photos of various product labels and their OCR results, and apply our proposal to them. The application results show that the naïve fuzzy search takes $15.241sec$ for the CPU time achieves $91.16\%$ correct rate. Then, the speedup method drastically reduces the CPU time to $0.984sec$ and slightly decreases the correct rate to $90.91\%$, where the number of matching records becomes 0.24\% of the original. The improvement of the correct rate will be in future studies.
+    For evaluations, we collect $389$ photos of various product labels and their OCR results, and apply our proposal to them. The application results show that the naïve fuzzy search takes $15.39sec$ for the CPU time achieves $94.3\%$ correct rate. Then, the speedup method drastically reduces the CPU time to $0.99sec$ and slightly decreases the correct rate to $94.1\%$, where the number of matching records becomes $0.24\%$ of the original. The improvement of the correct rate will be in future studies.
 
     %contents
     The rest of this paper is organized as follows:
