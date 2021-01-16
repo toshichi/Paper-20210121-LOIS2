@@ -277,7 +277,7 @@ NEC Personal Products, Ltd. 0 2 0 85 6 -0 0
             \begin{center}
                 \begin{tabular}{l|l}
                     \Hline
-                    product\_name & model\_number \\
+                    product name & model number \\
                     \Hline
                     I-O DATA & EX-LD2071TB \\
                     CM 690 III & CMS-693-KKN1-JP \\
@@ -452,7 +452,7 @@ Matched Model:
                     64.27 & 39.54 & 64.27 &
                     3.00 & 2.51 & 3.00 \\ 
                 average number of cal. records &
-                    553,887.00 & 553,887.00 & 553,887.00 &
+                    553,887 & 553,887 & 553,887 &
                     1,208.27 & 1,916.88 & 1,350.36 \\
                 \Hline
                 \end{tabular}
@@ -474,29 +474,25 @@ Matched Model:
             \caption{Slow search results using speed-up method}
             \label{table:slowest_rec}
             \begin{center}
-                \begin{tabular}{c|c|c|c|c|c|c}
+                \begin{tabular}{c|c|c|c|c|c|c|c}
                 \Hline
                     \begin{tabular}{c}product\\model\\number\end{tabular} &
                     \begin{tabular}{c}number of\\extracted\\candidates\end{tabular} &
+                    \begin{tabular}{c}result of\\extracted\\candidates\end{tabular} &
                     \begin{tabular}{c}search\\time (s)\end{tabular} &
                     \begin{tabular}{c}number of\\search\\records\end{tabular} &
                     \begin{tabular}{c}maximum\\score\\output\end{tabular} &
                     \begin{tabular}{c}any\\score\\output\end{tabular} &
                     \begin{tabular}{c}maximum\\similarity\\score\end{tabular} \\ 
+                \hline
+                DC35 & 14 & partially correct & 1.80353 & 24,675 & incorrect & incorrect & 89 \\ 
+                ADP-60NH & 32 & fully correct & 2.22952 & 7,823 & correct & correct & 100 \\ 
+                TPC-F026-SF & 23 & partially correct & 2.51139 & 6,761 & correct & correct & 91 \\ 
+                K04A-WH & 38 & fully correct & 2.53164 & 5,009 & correct & correct & 100 \\ 
+                MRO-GS8 & 22 & fully correct & 2.91033 & 3,822 & correct & correct & 100 \\ 
+                NE-BS805-K & 33 & fully correct & 3.00420 & 5,574 & correct & correct & 100 \\ 
                 \Hline
-                DC35 & 14 & 1.80353 & 24,675 & incorrect & incorrect & 89 \\ 
-                \hline
-                DM-E25AW & 29 & 2.41260 & 2,912 & correct & correct & 100 \\ 
-                \hline
-                TPC-F026-SF & 23 & 2.51139 & 6,761 & correct & correct & 91 \\ 
-                \hline
-                K04A-WH & 38 & 2.53164 & 5,009 & correct & correct & 100 \\ 
-                \hline
-                MRO-GS8 & 22 & 2.91033 & 3,822 & correct & correct & 100 \\ 
-                \hline
-                NE-BS805-K & 33 & 3.00420 & 5574 & correct & correct & 100 \\ 
-                \Hline
-                \end{tabular}
+            \end{tabular}
             \end{center}
         \end{table*}
       
